@@ -46,27 +46,22 @@ export default function Home() {
         >
           {/* Header / Logo */}
           <header className="text-center mb-10">
-            <div className="relative inline-block">
-              {/* Neon glow effect */}
-              <h1
-                className="text-6xl sm:text-7xl font-bold text-[#E5B94A] tracking-wider animate-flicker font-display"
-                style={{
-                  textShadow: '0 0 10px rgba(229, 185, 74, 0.7), 0 0 20px rgba(229, 185, 74, 0.5), 0 0 40px rgba(229, 185, 74, 0.3), 0 0 80px rgba(229, 185, 74, 0.1)'
-                }}
-              >
-                YANIV
-              </h1>
-              {/* Glow backdrop */}
-              <div className="absolute inset-0 blur-2xl bg-[#E5B94A]/20 -z-10 scale-150" />
-            </div>
+            <h1
+              className="text-5xl sm:text-6xl font-bold text-[#E5B94A] tracking-wider font-display"
+              style={{
+                textShadow: '0 0 8px rgba(229, 185, 74, 0.4), 0 0 16px rgba(229, 185, 74, 0.2)'
+              }}
+            >
+              YANIV
+            </h1>
 
             {/* Tagline with suits */}
-            <div className="flex items-center justify-center gap-3 mt-4">
-              <span className="text-2xl text-[#C41E3A]" aria-hidden="true">♥</span>
+            <div className="flex items-center justify-center gap-3 mt-3">
+              <span className="text-xl text-[#C41E3A]" aria-hidden="true">♥</span>
               <p className="text-[#F4D68C]/80 text-sm tracking-[0.25em] uppercase font-body">
                 Score Keeper
               </p>
-              <span className="text-2xl text-[#1A1A1A]" aria-hidden="true">♠</span>
+              <span className="text-xl text-[#1A1A1A]" aria-hidden="true">♠</span>
             </div>
           </header>
 
@@ -106,10 +101,8 @@ export default function Home() {
                 {/* Shine overlay */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-t-xl pointer-events-none" />
 
-                <span className="relative flex items-center justify-center gap-3 text-[#1A1A1A] font-semibold text-lg tracking-[0.15em] uppercase font-body">
-                  <span className="text-xl" aria-hidden="true">♠</span>
-                  <span>Deal New Game</span>
-                  <span className="text-xl text-[#8B1E3A]" aria-hidden="true">♥</span>
+                <span className="relative text-[#1A1A1A] font-semibold text-xl tracking-[0.15em] uppercase font-body">
+                  Start New Game
                 </span>
               </Link>
 
@@ -126,15 +119,8 @@ export default function Home() {
                 >
                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/8 to-transparent rounded-t-xl pointer-events-none" />
 
-                  <span className="relative flex flex-col items-center justify-center gap-1 text-[#F5F0E1] tracking-[0.1em] uppercase font-body">
-                    <span className="flex items-center gap-2 font-medium text-base">
-                      <span className="text-lg text-[#8B1E3A]/70" aria-hidden="true">♦</span>
-                      <span>Continue Game</span>
-                      <span className="text-lg text-[#1A1A1A]/50" aria-hidden="true">♣</span>
-                    </span>
-                    <span className="text-xs text-[#D4CBBA]/70 tracking-wider normal-case">
-                      Round 5 · 4 Players
-                    </span>
+                  <span className="relative text-[#F5F0E1] font-medium text-base tracking-[0.1em] uppercase font-body">
+                    Continue Game
                   </span>
                 </Link>
               ) : (
@@ -145,12 +131,8 @@ export default function Home() {
                     border: '2px solid rgba(201, 151, 45, 0.2)'
                   }}
                 >
-                  <span className="relative flex flex-col items-center justify-center gap-1 text-[#F5F0E1] tracking-[0.1em] uppercase font-body">
-                    <span className="flex items-center gap-2 font-medium text-base">
-                      <span className="text-lg text-[#8B1E3A]/70" aria-hidden="true">♦</span>
-                      <span>No Saved Game</span>
-                      <span className="text-lg text-[#1A1A1A]/50" aria-hidden="true">♣</span>
-                    </span>
+                  <span className="relative text-[#F5F0E1] font-medium text-base tracking-[0.1em] uppercase font-body">
+                    No Saved Game
                   </span>
                 </div>
               )}
