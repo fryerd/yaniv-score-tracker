@@ -728,186 +728,241 @@ export default function GamePlayPage() {
 
             {/* Podium Phase */}
             {postGamePhase === 'podium' && (
-              <div className="flex-1 flex flex-col items-center justify-start pt-16">
-                {/* Confetti burst effect */}
+              <div className="flex-1 flex flex-col items-center justify-start pt-8">
+                {/* Celebration effects - only when winner revealed */}
                 {showConfetti && (
-                  <div className="absolute inset-0 flex items-start justify-center pt-24 pointer-events-none overflow-hidden">
-                    {/* Central glow burst */}
-                    <div className="animate-confetti-burst w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(229, 185, 74, 0.4) 0%, transparent 70%)' }} />
-                    {/* CSS Particle effects */}
-                    {[...Array(16)].map((_, i) => {
-                      const angle = (i / 16) * 360;
-                      const distance = 80 + (i % 3) * 40;
-                      return (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {/* Radial burst from center */}
+                    <div
+                      className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full animate-radial-burst"
+                      style={{ background: 'radial-gradient(circle, rgba(229, 185, 74, 0.5) 0%, rgba(229, 185, 74, 0.2) 40%, transparent 70%)' }}
+                    />
+                    {/* Rotating rays behind podium */}
+                    <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 animate-rays-rotate opacity-20">
+                      {[...Array(12)].map((_, i) => (
                         <div
                           key={i}
-                          className="absolute w-2 h-2 rounded-full animate-sparkle"
+                          className="absolute top-1/2 left-1/2 w-0.5 h-32 origin-top"
                           style={{
-                            background: i % 3 === 0 ? '#E5B94A' : i % 3 === 1 ? '#F4D68C' : '#C9972D',
-                            top: `${20 + Math.sin(angle * Math.PI / 180) * 15}%`,
-                            left: `${50 + Math.cos(angle * Math.PI / 180) * 20}%`,
-                            animationDelay: `${i * 0.08}s`,
-                            boxShadow: `0 0 8px ${i % 3 === 0 ? '#E5B94A' : i % 3 === 1 ? '#F4D68C' : '#C9972D'}`,
-                          }}
-                        />
-                      );
-                    })}
-                    {/* Radial rays */}
-                    <div className="absolute top-24 left-1/2 -translate-x-1/2 w-48 h-48 animate-spin" style={{ animation: 'spin 8s linear infinite', opacity: 0.15 }}>
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute top-1/2 left-1/2 w-1 h-24 origin-bottom"
-                          style={{
-                            background: 'linear-gradient(to top, #E5B94A, transparent)',
-                            transform: `rotate(${i * 45}deg) translateX(-50%)`,
+                            background: 'linear-gradient(to bottom, #E5B94A, transparent)',
+                            transform: `rotate(${i * 30}deg) translateX(-50%)`,
                           }}
                         />
                       ))}
                     </div>
+                    {/* Floating particles */}
+                    {[...Array(20)].map((_, i) => {
+                      const angle = (i / 20) * 360;
+                      const distance = 100 + Math.random() * 80;
+                      const tx = Math.cos(angle * Math.PI / 180) * distance;
+                      const ty = Math.sin(angle * Math.PI / 180) * distance - 50;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute top-1/3 left-1/2 w-2 h-2 rounded-full"
+                          style={{
+                            background: ['#E5B94A', '#F4D68C', '#C9972D', '#FFD700'][i % 4],
+                            boxShadow: `0 0 6px ${['#E5B94A', '#F4D68C', '#C9972D', '#FFD700'][i % 4]}`,
+                            '--tx': `${tx}px`,
+                            '--ty': `${ty}px`,
+                            animation: `particle-float 1.5s ease-out forwards`,
+                            animationDelay: `${i * 0.05}s`,
+                          } as React.CSSProperties}
+                        />
+                      );
+                    })}
+                    {/* Twinkling sparkles */}
+                    {[...Array(8)].map((_, i) => (
+                      <div
+                        key={`sparkle-${i}`}
+                        className="absolute animate-sparkle-twinkle"
+                        style={{
+                          top: `${20 + Math.random() * 30}%`,
+                          left: `${25 + Math.random() * 50}%`,
+                          animationDelay: `${i * 0.2}s`,
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path d="M8 0L9.5 6.5L16 8L9.5 9.5L8 16L6.5 9.5L0 8L6.5 6.5L8 0Z" fill="#F4D68C"/>
+                        </svg>
+                      </div>
+                    ))}
                   </div>
                 )}
 
-                {/* Podium */}
-                <div className="flex items-end justify-center gap-2 mt-8">
+                {/* Podium container - uses relative positioning with fixed layout */}
+                <div className="relative w-full max-w-xs h-64 mt-12">
                   {(() => {
                     const sorted = getSortedPlayers();
                     const isTwoPlayers = sorted.length === 2;
 
                     if (isTwoPlayers) {
-                      // Just show gold for 2 players
                       const winner = sorted[0];
                       return (
-                        <div className="flex flex-col items-center">
-                          {/* Avatar */}
+                        <>
+                          {/* Gold - centered for 2 players */}
                           {podiumStep >= 1 && (
-                            <div
-                              className={`w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl font-body mb-4 animate-avatar-drop ${showConfetti ? 'animate-winner-glow' : ''}`}
-                              style={{ backgroundColor: winner.color }}
-                            >
-                              {getInitials(winner.name)}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                              {/* Avatar */}
+                              <div
+                                className={`w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl font-body mb-3 animate-avatar-drop ${showConfetti ? 'animate-winner-glow' : ''}`}
+                                style={{
+                                  backgroundColor: winner.color,
+                                  animationDelay: '0.3s',
+                                  opacity: 0,
+                                  animationFillMode: 'forwards',
+                                }}
+                              >
+                                {getInitials(winner.name)}
+                              </div>
+                              {/* Plinth */}
+                              <div
+                                className={`w-28 h-36 rounded-t-xl flex flex-col items-center justify-start pt-4 animate-gold-plinth-rise ${showConfetti ? 'animate-winner-spotlight' : ''}`}
+                                style={{
+                                  background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 40%, #C9972D 100%)',
+                                  boxShadow: '0 -4px 20px rgba(229, 185, 74, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
+                                  opacity: 0,
+                                  animationFillMode: 'forwards',
+                                }}
+                              >
+                                <span className="text-3xl drop-shadow-lg">🥇</span>
+                                <span className="text-[#1A1A1A] font-bold text-sm font-body mt-2">{getFirstName(winner.name)}</span>
+                                <span className="text-[#1A1A1A]/60 font-score text-lg">{winner.cumulativeScore}</span>
+                              </div>
                             </div>
                           )}
-                          {/* Gold plinth */}
-                          {podiumStep >= 1 && (
-                            <div
-                              className="w-28 h-32 rounded-t-lg animate-podium-rise flex flex-col items-center justify-start pt-4"
-                              style={{
-                                background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 50%, #C9972D 100%)',
-                                boxShadow: '0 4px 20px rgba(229, 185, 74, 0.4)',
-                              }}
-                            >
-                              <span className="text-3xl">🥇</span>
-                              <span className="text-[#1A1A1A] font-bold text-sm font-body mt-2">{getFirstName(winner.name)}</span>
-                              <span className="text-[#1A1A1A]/60 font-score text-lg">{winner.cumulativeScore}</span>
-                            </div>
-                          )}
-                        </div>
+                        </>
                       );
                     }
 
-                    // 3+ players - show podium
+                    // 3+ players - positioned podium
                     const [first, second, third] = sorted;
                     return (
                       <>
-                        {/* Silver (2nd) - left */}
-                        <div className="flex flex-col items-center">
-                          {podiumStep >= 2 && second && (
+                        {/* Bronze (3rd) - RIGHT side, appears first */}
+                        {podiumStep >= 1 && third && (
+                          <div className="absolute bottom-0 right-4 flex flex-col items-center">
                             <div
-                              className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl font-body mb-3 animate-avatar-drop"
-                              style={{ backgroundColor: second.color }}
+                              className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg font-body mb-2 animate-avatar-drop"
+                              style={{
+                                backgroundColor: third.color,
+                                animationDelay: '0.25s',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
+                              }}
+                            >
+                              {getInitials(third.name)}
+                            </div>
+                            <div
+                              className="w-20 h-20 rounded-t-lg flex flex-col items-center justify-start pt-2 animate-plinth-rise"
+                              style={{
+                                background: 'linear-gradient(180deg, #DDA15E 0%, #CD7F32 50%, #A0522D 100%)',
+                                boxShadow: '0 -2px 12px rgba(205, 127, 50, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
+                              }}
+                            >
+                              <span className="text-xl">🥉</span>
+                              <span className="text-white font-bold text-xs font-body truncate max-w-16 mt-0.5">{getFirstName(third.name)}</span>
+                              <span className="text-white/70 font-score text-xs">{third.cumulativeScore}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Silver (2nd) - LEFT side, appears second */}
+                        {podiumStep >= 2 && second && (
+                          <div className="absolute bottom-0 left-4 flex flex-col items-center">
+                            <div
+                              className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl font-body mb-2 animate-avatar-drop"
+                              style={{
+                                backgroundColor: second.color,
+                                animationDelay: '0.25s',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
+                              }}
                             >
                               {getInitials(second.name)}
                             </div>
-                          )}
-                          {podiumStep >= 2 && second && (
                             <div
-                              className="w-24 h-24 rounded-t-lg animate-podium-rise flex flex-col items-center justify-start pt-3"
+                              className="w-24 h-28 rounded-t-lg flex flex-col items-center justify-start pt-3 animate-plinth-rise"
                               style={{
                                 background: 'linear-gradient(180deg, #E8E8E8 0%, #C0C0C0 50%, #A0A0A0 100%)',
-                                boxShadow: '0 4px 16px rgba(192, 192, 192, 0.3)',
+                                boxShadow: '0 -2px 16px rgba(192, 192, 192, 0.3), inset 0 1px 0 rgba(255,255,255,0.4)',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
                               }}
                             >
                               <span className="text-2xl">🥈</span>
                               <span className="text-[#1A1A1A] font-bold text-xs font-body mt-1 truncate max-w-20">{getFirstName(second.name)}</span>
                               <span className="text-[#1A1A1A]/60 font-score text-sm">{second.cumulativeScore}</span>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
 
-                        {/* Gold (1st) - center */}
-                        <div className="flex flex-col items-center -mx-1">
-                          {podiumStep >= 3 && first && (
+                        {/* Gold (1st) - CENTER, appears last with fanfare */}
+                        {podiumStep >= 3 && first && (
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
                             <div
-                              className={`w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl font-body mb-4 animate-avatar-drop ${showConfetti ? 'animate-winner-glow' : ''}`}
-                              style={{ backgroundColor: first.color }}
+                              className={`w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl font-body mb-3 animate-avatar-drop ${showConfetti ? 'animate-winner-glow' : ''}`}
+                              style={{
+                                backgroundColor: first.color,
+                                animationDelay: '0.35s',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
+                              }}
                             >
                               {getInitials(first.name)}
                             </div>
-                          )}
-                          {podiumStep >= 3 && first && (
                             <div
-                              className="w-28 h-32 rounded-t-lg animate-podium-rise flex flex-col items-center justify-start pt-4"
+                              className={`w-28 h-36 rounded-t-xl flex flex-col items-center justify-start pt-4 animate-gold-plinth-rise ${showConfetti ? 'animate-winner-spotlight' : ''}`}
                               style={{
-                                background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 50%, #C9972D 100%)',
-                                boxShadow: '0 4px 20px rgba(229, 185, 74, 0.4)',
+                                background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 40%, #C9972D 100%)',
+                                boxShadow: '0 -4px 20px rgba(229, 185, 74, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
+                                opacity: 0,
+                                animationFillMode: 'forwards',
                               }}
                             >
-                              <span className="text-3xl">🥇</span>
+                              <span className="text-3xl drop-shadow-lg">🥇</span>
                               <span className="text-[#1A1A1A] font-bold text-sm font-body mt-2">{getFirstName(first.name)}</span>
                               <span className="text-[#1A1A1A]/60 font-score text-lg">{first.cumulativeScore}</span>
                             </div>
-                          )}
-                        </div>
-
-                        {/* Bronze (3rd) - right */}
-                        <div className="flex flex-col items-center">
-                          {podiumStep >= 1 && third && (
-                            <div
-                              className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg font-body mb-2 animate-avatar-drop"
-                              style={{ backgroundColor: third.color }}
-                            >
-                              {getInitials(third.name)}
-                            </div>
-                          )}
-                          {podiumStep >= 1 && third && (
-                            <div
-                              className="w-20 h-16 rounded-t-lg animate-podium-rise flex flex-col items-center justify-start pt-2"
-                              style={{
-                                background: 'linear-gradient(180deg, #DDA15E 0%, #CD7F32 50%, #A0522D 100%)',
-                                boxShadow: '0 4px 12px rgba(205, 127, 50, 0.3)',
-                              }}
-                            >
-                              <span className="text-xl">🥉</span>
-                              <span className="text-white font-bold text-xs font-body truncate max-w-16">{getFirstName(third.name)}</span>
-                              <span className="text-white/70 font-score text-xs">{third.cumulativeScore}</span>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </>
                     );
                   })()}
                 </div>
+
+                {/* "Winner!" text that fades in */}
+                {showConfetti && (
+                  <div className="mt-8 animate-results-reveal" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <h2 className="text-[#E5B94A] text-2xl font-display font-bold text-center tracking-wide">
+                      🎉 Winner! 🎉
+                    </h2>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Results Phase */}
             {postGamePhase === 'results' && (
-              <div className="flex-1 flex flex-col animate-card-enter py-4">
+              <div className="flex-1 flex flex-col py-4 overflow-y-auto">
                 {/* Mini podium at top */}
-                <div className="flex items-end justify-center gap-1 mb-6">
+                <div
+                  className="flex items-end justify-center gap-1 mb-5 animate-results-reveal"
+                  style={{ opacity: 0, animationDelay: '0s', animationFillMode: 'forwards' }}
+                >
                   {(() => {
                     const sorted = getSortedPlayers();
                     const isTwoPlayers = sorted.length === 2;
-                    const medals = ['🥇', '🥈', '🥉'];
 
                     if (isTwoPlayers) {
                       const winner = sorted[0];
                       return (
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg font-body mb-1"
-                            style={{ backgroundColor: winner.color, boxShadow: '0 0 20px rgba(229, 185, 74, 0.4)' }}
+                            className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg font-body mb-1 animate-winner-glow"
+                            style={{ backgroundColor: winner.color }}
                           >
                             {getInitials(winner.name)}
                           </div>
@@ -916,11 +971,9 @@ export default function GamePlayPage() {
                       );
                     }
 
-                    // 3+ players - show podium order: Silver, Gold, Bronze
                     const [first, second, third] = sorted;
                     return (
                       <>
-                        {/* Silver */}
                         {second && (
                           <div className="flex flex-col items-center">
                             <div
@@ -929,26 +982,24 @@ export default function GamePlayPage() {
                             >
                               {getInitials(second.name)}
                             </div>
-                            <div className="w-14 h-12 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #E8E8E8 0%, #A0A0A0 100%)' }}>
+                            <div className="w-14 h-12 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #E8E8E8 0%, #A0A0A0 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                               <span className="text-sm">🥈</span>
                             </div>
                           </div>
                         )}
-                        {/* Gold */}
                         {first && (
                           <div className="flex flex-col items-center -mx-0.5">
                             <div
-                              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base font-body mb-1"
-                              style={{ backgroundColor: first.color, boxShadow: '0 0 20px rgba(229, 185, 74, 0.4)' }}
+                              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base font-body mb-1 animate-winner-glow"
+                              style={{ backgroundColor: first.color }}
                             >
                               {getInitials(first.name)}
                             </div>
-                            <div className="w-16 h-16 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #F4D68C 0%, #C9972D 100%)' }}>
+                            <div className="w-16 h-16 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #F4D68C 0%, #C9972D 100%)', boxShadow: '0 0 15px rgba(229, 185, 74, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                               <span className="text-lg">🥇</span>
                             </div>
                           </div>
                         )}
-                        {/* Bronze */}
                         {third && (
                           <div className="flex flex-col items-center">
                             <div
@@ -957,7 +1008,7 @@ export default function GamePlayPage() {
                             >
                               {getInitials(third.name)}
                             </div>
-                            <div className="w-12 h-8 rounded-t-md flex items-start justify-center pt-0.5" style={{ background: 'linear-gradient(180deg, #DDA15E 0%, #A0522D 100%)' }}>
+                            <div className="w-12 h-8 rounded-t-md flex items-start justify-center pt-0.5" style={{ background: 'linear-gradient(180deg, #DDA15E 0%, #A0522D 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)' }}>
                               <span className="text-xs">🥉</span>
                             </div>
                           </div>
@@ -967,16 +1018,23 @@ export default function GamePlayPage() {
                   })()}
                 </div>
 
-                <h2 className="text-[#F4D68C] text-lg font-display font-bold text-center mb-4">
+                <h2
+                  className="text-[#F4D68C] text-lg font-display font-bold text-center mb-4 animate-results-reveal"
+                  style={{ opacity: 0, animationDelay: '0.1s', animationFillMode: 'forwards' }}
+                >
                   Final Tally
                 </h2>
 
                 {/* Final standings table */}
                 <div
-                  className="rounded-xl p-4 mb-6"
+                  className="rounded-xl p-4 mb-6 animate-results-reveal"
                   style={{
                     background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
                     border: '2px solid rgba(229, 185, 74, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                    opacity: 0,
+                    animationDelay: '0.15s',
+                    animationFillMode: 'forwards',
                   }}
                 >
                   {/* Header */}
@@ -991,12 +1049,12 @@ export default function GamePlayPage() {
                   {getSortedPlayers().map((player, index) => (
                     <div
                       key={player.id}
-                      className="flex items-center py-2 animate-card-enter"
-                      style={{ animationDelay: `${index * 100}ms` }}
+                      className="flex items-center py-2 animate-results-reveal"
+                      style={{ opacity: 0, animationDelay: `${0.25 + index * 0.08}s`, animationFillMode: 'forwards' }}
                     >
                       <div className="flex-1 flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm font-body"
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm font-body ${index === 0 ? 'ring-2 ring-[#E5B94A]/50' : ''}`}
                           style={{ backgroundColor: player.color }}
                         >
                           {getInitials(player.name)}
@@ -1009,7 +1067,7 @@ export default function GamePlayPage() {
                       <div className="w-12 text-center text-[#C41E3A] font-score">
                         {highlights?.falseYanivs[player.id] || 0}
                       </div>
-                      <div className="w-16 text-right text-[#F4D68C] font-score font-bold">
+                      <div className={`w-16 text-right font-score font-bold ${index === 0 ? 'text-[#E5B94A]' : 'text-[#F4D68C]'}`}>
                         {player.cumulativeScore}
                       </div>
                     </div>
@@ -1017,7 +1075,10 @@ export default function GamePlayPage() {
                 </div>
 
                 {/* Yan Highlights */}
-                <div className="flex items-center justify-center gap-2 mb-4">
+                <div
+                  className="flex items-center justify-center gap-2 mb-4 animate-results-reveal"
+                  style={{ opacity: 0, animationDelay: '0.5s', animationFillMode: 'forwards' }}
+                >
                   <div className="flex-1 h-px bg-[#C9972D]/20" />
                   <span className="text-[#F4D68C]/60 text-sm font-body">Yan Highlights</span>
                   <span className="text-[#F4D68C]/40">▼</span>
@@ -1025,10 +1086,14 @@ export default function GamePlayPage() {
                 </div>
 
                 <div
-                  className="rounded-xl p-4 space-y-3"
+                  className="rounded-xl p-4 space-y-3 animate-results-reveal"
                   style={{
                     background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
                     border: '2px solid rgba(229, 185, 74, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                    opacity: 0,
+                    animationDelay: '0.55s',
+                    animationFillMode: 'forwards',
                   }}
                 >
                   {highlights && (
@@ -1187,7 +1252,10 @@ export default function GamePlayPage() {
 
 
                 {/* Share and New Game buttons */}
-                <div className="mt-auto pt-6 space-y-3">
+                <div
+                  className="mt-auto pt-6 space-y-3 animate-results-reveal"
+                  style={{ opacity: 0, animationDelay: '0.7s', animationFillMode: 'forwards' }}
+                >
                   <button
                     onClick={handleShare}
                     className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#F5F0E1] tracking-wide font-body"
@@ -1196,7 +1264,7 @@ export default function GamePlayPage() {
                       boxShadow: '0 4px 0 #047857, 0 6px 12px rgba(0,0,0,0.25)',
                     }}
                   >
-                    {shareMessage || 'Share'}
+                    {shareMessage || 'Share Results'}
                   </button>
                   <button
                     onClick={() => {
