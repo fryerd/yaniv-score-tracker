@@ -20,13 +20,14 @@ export default function GamePlayPage() {
 
   // Animation states
   const [showRawScores, setShowRawScores] = useState(false);
-  const [animatingWinner, setAnimatingWinner] = useState(false);
   const [slideDirection, setSlideDirection] = useState<'enter' | 'exit' | null>(null);
   const [animatingRoundIndex, setAnimatingRoundIndex] = useState<number | null>(null);
   const [animatedScores, setAnimatedScores] = useState<{ [playerId: string]: number }>({});
   const [animatedTotals, setAnimatedTotals] = useState<{ [playerId: string]: number }>({});
-  const [winnerPopId, setWinnerPopId] = useState<string | null>(null);
   const [showYanivWarning, setShowYanivWarning] = useState(false);
+
+  // State for showing hand scores when tapping a round
+  const [showingHandScoresForRound, setShowingHandScoresForRound] = useState<number | null>(null);
 
   // Redirect if no game - go to homepage, not /game/new
   useEffect(() => {
@@ -159,17 +160,6 @@ export default function GamePlayPage() {
           const steps = 15;
           const stepTime = baseDuration / steps;
 
-          // Find who won this round (scored 0 in the final calculation)
-          // The actual winner will be determined after addRound processes false yaniv etc.
-          // For now, we'll trigger pop for the yaniv caller if their hand was lowest
-          const callerScore = newScores[yanivCallerId] ?? 0;
-          const otherScores = Object.entries(newScores)
-            .filter(([id]) => id !== yanivCallerId)
-            .map(([, score]) => score);
-          const someoneHasLowerOrEqual = otherScores.some(s => s <= callerScore);
-          // If no one has lower/equal, yaniv caller wins and scores 0
-          const roundWinnerForPop = someoneHasLowerOrEqual ? null : yanivCallerId;
-
           // Start staggered animations for each player
           players.forEach((player, playerIndex) => {
             const delay = playerIndex * staggerDelay;
@@ -194,7 +184,7 @@ export default function GamePlayPage() {
                     [player.id]: targetScore,
                   }));
 
-                  // If this is the last player and they scored 0, trigger winner pop
+                  // If this is the last player, start total animations
                   if (playerIndex === players.length - 1) {
                     // All round scores done, now animate totals with stagger
                     setTimeout(() => {
@@ -216,18 +206,9 @@ export default function GamePlayPage() {
                             if (totalStep >= steps) {
                               clearInterval(totalInterval);
 
-                              // If last player's total animation done, trigger winner pop
+                              // If last player's total animation done, end animation state
                               if (idx === players.length - 1) {
-                                // Trigger winner pop for player who won (scored 0)
-                                if (roundWinnerForPop) {
-                                  setWinnerPopId(roundWinnerForPop);
-                                  setTimeout(() => {
-                                    setWinnerPopId(null);
-                                    setAnimatingRoundIndex(null);
-                                  }, 600);
-                                } else {
-                                  setAnimatingRoundIndex(null);
-                                }
+                                setAnimatingRoundIndex(null);
                               }
                             }
                           }, stepTime);
@@ -244,9 +225,32 @@ export default function GamePlayPage() {
     }
   };
 
-  // Get round winner (player who scored 0)
+  // Get round winner - in False Yaniv, it's the victim(s); in normal Yaniv, it's the caller
   const getRoundWinnerId = (round: typeof rounds[0]) => {
-    return round.scoresAdded.find(s => s.pointsAdded === 0)?.playerId;
+    if (round.isFalseYaniv && round.falseYanivVictimIds?.length) {
+      // In False Yaniv, the victim(s) with lower/equal hand win
+      return round.falseYanivVictimIds[0];
+    }
+    // In normal Yaniv, the caller wins
+    return round.yanivCallerId;
+  };
+
+  // Get hand score (what they actually had) for player in round
+  const getHandScore = (round: typeof rounds[0], playerId: string) => {
+    return round.playerHands.find(h => h.playerId === playerId)?.handTotal ?? 0;
+  };
+
+  // Handle tapping a round row to show hand scores
+  const handleRoundTap = (roundIndex: number) => {
+    if (showingHandScoresForRound === roundIndex) {
+      setShowingHandScoresForRound(null);
+    } else {
+      setShowingHandScoresForRound(roundIndex);
+      // Auto-hide after 2 seconds
+      setTimeout(() => {
+        setShowingHandScoresForRound(null);
+      }, 2000);
+    }
   };
 
   // Check if round had False Yaniv
@@ -377,44 +381,52 @@ export default function GamePlayPage() {
               const winnerId = getRoundWinnerId(round);
               const isFalse = hasFalseYaniv(round);
               const isAnimating = animatingRoundIndex === roundIndex;
+              const showingHands = showingHandScoresForRound === roundIndex;
 
               return (
-                <div key={round.roundNumber} className={`flex items-center transition-all ${isAnimating ? 'bg-[#E5B94A]/10 rounded-lg py-1 -mx-1 px-1' : ''}`}>
-                  <div className="w-10 flex-shrink-0 text-[#F4D68C]/50 text-xs font-body">
-                    R{round.roundNumber}
+                <div
+                  key={round.roundNumber}
+                  onClick={() => !isAnimating && handleRoundTap(roundIndex)}
+                  className={`flex items-center transition-all cursor-pointer active:bg-[#E5B94A]/5 ${
+                    isAnimating ? 'bg-[#E5B94A]/10 rounded-lg py-1 -mx-1 px-1' :
+                    showingHands ? 'bg-[#3B82F6]/10 rounded-lg py-1 -mx-1 px-1' : ''
+                  }`}
+                >
+                  <div className={`w-10 flex-shrink-0 text-xs font-body ${showingHands ? 'text-[#3B82F6]' : 'text-[#F4D68C]/50'}`}>
+                    {showingHands ? 'Hand' : `R${round.roundNumber}`}
                   </div>
                   {players.map((player) => {
                     const actualScore = getRoundScore(round, player.id);
+                    const handScore = getHandScore(round, player.id);
                     const displayScore = isAnimating
                       ? (animatedScores[player.id] ?? 0)
+                      : showingHands
+                      ? handScore
                       : actualScore;
                     const isWinner = winnerId === player.id;
                     const gotBonus = hasBonus(round, player.id);
                     const isFalseYanivCaller = isFalse && round.yanivCallerId === player.id;
-                    const isWinnerPopping = isAnimating && winnerPopId === player.id && actualScore === 0;
 
                     return (
                       <div
                         key={player.id}
-                        className={`flex-1 flex justify-center items-center gap-1 transition-all ${
-                          isWinnerPopping ? 'animate-winner-pop' : ''
-                        }`}
+                        className="flex-1 flex justify-center items-center gap-1 transition-all"
                       >
-                        {isWinner && (
-                          <span className={`text-xs text-[#F4D68C] ${isWinnerPopping ? 'animate-bounce' : ''}`}>♔</span>
+                        {!showingHands && isWinner && (
+                          <span className="text-xs text-[#F4D68C]">♔</span>
                         )}
-                        {isFalseYanivCaller && (
+                        {!showingHands && isFalseYanivCaller && (
                           <span className="text-xs text-[#C41E3A]">✗</span>
                         )}
-                        {gotBonus && (
+                        {!showingHands && gotBonus && (
                           <span className="text-xs text-[#10B981]">★</span>
                         )}
                         <span
                           className={`font-score text-lg transition-all ${
-                            isWinnerPopping
-                              ? 'text-[#10B981] font-bold scale-125'
+                            showingHands
+                              ? 'text-[#3B82F6] font-medium'
                               : isAnimating
-                              ? 'text-[#E5B94A] font-bold scale-105'
+                              ? 'text-[#E5B94A] font-bold'
                               : isWinner
                               ? 'text-[#E5B94A] font-bold'
                               : isFalseYanivCaller
