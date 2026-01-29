@@ -710,7 +710,7 @@ export default function GamePlayPage() {
 
                 {/* Submit button */}
                 <button
-                  onClick={handleSubmitPlayerScore}
+                  onClick={() => handleSubmitPlayerScore()}
                   className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] text-[#1A1A1A] tracking-wide font-body"
                   style={{
                     background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 50%, #C9972D 100%)',
