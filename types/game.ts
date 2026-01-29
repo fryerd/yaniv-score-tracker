@@ -13,6 +13,7 @@ export interface Player {
   id: string;
   name: string;
   cumulativeScore: number;       // Running total
+  color: string;                 // Avatar color
 }
 
 // Individual round data
@@ -30,6 +31,7 @@ export interface Round {
     pointsAdded: number;         // Could be 0, hand total, or penalty
     bonusApplied?: boolean;      // Did they hit multiple of 50?
     bonusAmount?: number;        // -25 or ÷2
+    finalScore: number;          // Score after this round
   }[];
 }
 

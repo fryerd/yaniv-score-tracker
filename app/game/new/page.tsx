@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HouseRules } from '@/types/game';
+import { useGameStore } from '@/lib/store';
 
 // Avatar colors - rich, saturated palette
 const AVATAR_COLORS = [
@@ -40,6 +41,7 @@ function formatPlayerNames(players: string[]): string {
 
 export default function NewGamePage() {
   const router = useRouter();
+  const createGame = useGameStore(state => state.createGame);
   const [step, setStep] = useState(1);
 
   // Step 1: Player count
@@ -79,6 +81,7 @@ export default function NewGamePage() {
   const canContinueFromNames = players.every(p => p.trim().length > 0);
 
   const handleStartGame = () => {
+    createGame(players, houseRules);
     router.push('/game/play');
   };
 
