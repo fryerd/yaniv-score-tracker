@@ -3,6 +3,7 @@ export interface HouseRules {
   falseYanivPenalty: number;     // Default: 25
   bystandersScoreOnFalseYaniv: boolean;  // Default: false
   bonusType: 'subtract25' | 'divide2' | 'none';  // Default: 'subtract25'
+  winStreakBonus: boolean;       // Default: false - 3 consecutive Yaniv wins = -25
   endGameMode: 'highScore' | 'numRounds';  // Default: 'highScore'
   maxScore: number;              // Default: 150 (used when endGameMode is 'highScore')
   maxRounds: number;             // Default: 10 (used when endGameMode is 'numRounds')
@@ -31,6 +32,7 @@ export interface Round {
     pointsAdded: number;         // Could be 0, hand total, or penalty
     bonusApplied?: boolean;      // Did they hit multiple of 50?
     bonusAmount?: number;        // -25 or ÷2
+    streakBonusApplied?: boolean; // Did they get 3-win streak bonus?
     finalScore: number;          // Score after this round
   }[];
 }

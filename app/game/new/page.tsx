@@ -55,6 +55,7 @@ export default function NewGamePage() {
     falseYanivPenalty: 25,
     bystandersScoreOnFalseYaniv: false,
     bonusType: 'subtract25',
+    winStreakBonus: false,
     endGameMode: 'highScore',
     maxScore: 150,
     maxRounds: 10
@@ -402,6 +403,19 @@ export default function NewGamePage() {
                           </button>
                         ))}
                       </div>
+
+                      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-white/20 hover:bg-white/30 transition-colors mt-4">
+                        <input
+                          type="checkbox"
+                          checked={houseRules.winStreakBonus}
+                          onChange={(e) => setHouseRules({ ...houseRules, winStreakBonus: e.target.checked })}
+                          className="w-5 h-5 rounded accent-[#8B6914]"
+                        />
+                        <div className="flex-1">
+                          <span className="text-[#1A1A1A]/80 text-sm font-body">3-win streak bonus (−25)</span>
+                          <p className="text-[#1A1A1A]/50 text-xs font-body">Win 3 Yanivs in a row</p>
+                        </div>
+                      </label>
                     </div>
                   </div>
                 </div>

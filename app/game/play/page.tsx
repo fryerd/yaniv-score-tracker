@@ -269,6 +269,11 @@ export default function GamePlayPage() {
     return round.scoresAdded.find(s => s.playerId === playerId)?.bonusApplied;
   };
 
+  // Check if player got streak bonus in round
+  const hasStreakBonus = (round: typeof rounds[0], playerId: string) => {
+    return round.scoresAdded.find(s => s.playerId === playerId)?.streakBonusApplied;
+  };
+
   // Get score for player in round
   const getRoundScore = (round: typeof rounds[0], playerId: string) => {
     return round.scoresAdded.find(s => s.playerId === playerId)?.pointsAdded ?? 0;
@@ -418,6 +423,7 @@ export default function GamePlayPage() {
                       : actualScore;
                     const isWinner = winnerId === player.id;
                     const gotBonus = hasBonus(round, player.id);
+                    const gotStreakBonus = hasStreakBonus(round, player.id);
                     const isFalseYanivCaller = isFalse && round.yanivCallerId === player.id;
 
                     return (
@@ -434,6 +440,9 @@ export default function GamePlayPage() {
                           )}
                           {!showingHands && gotBonus && (
                             <span className="text-xs text-[#10B981]">★</span>
+                          )}
+                          {!showingHands && gotStreakBonus && (
+                            <span className="text-xs text-[#F59E0B]">🔥</span>
                           )}
                         </span>
                         <span

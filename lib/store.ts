@@ -79,7 +79,7 @@ export const useGameStore = create<GameStore>()(
         if (!currentGame) return;
 
         const roundNumber = currentGame.rounds.length + 1;
-        const { houseRules, players } = currentGame;
+        const { houseRules, players, rounds } = currentGame;
 
         // Find Yaniv caller's hand total
         const callerHand = playerHands.find(h => h.playerId === yanivCallerId);
@@ -92,6 +92,24 @@ export const useGameStore = create<GameStore>()(
 
         const isFalseYaniv = equalOrLower.length > 0;
         const falseYanivVictimIds = equalOrLower.map(h => h.playerId);
+
+        // Check for 3-win streak bonus (caller won last 2 rounds + this one makes 3)
+        let hasWinStreak = false;
+        if (houseRules.winStreakBonus && !isFalseYaniv) {
+          // Count consecutive Yaniv wins for the caller (looking backwards)
+          let consecutiveWins = 0;
+          for (let i = rounds.length - 1; i >= 0; i--) {
+            const prevRound = rounds[i];
+            // Check if caller won this round (was yanivCallerId and no False Yaniv)
+            if (prevRound.yanivCallerId === yanivCallerId && !prevRound.isFalseYaniv) {
+              consecutiveWins++;
+            } else {
+              break; // Streak broken
+            }
+          }
+          // If they won the last 2 rounds, this will be their 3rd consecutive win
+          hasWinStreak = consecutiveWins >= 2;
+        }
 
         // Calculate scores for each player
         const scoresAdded: Round['scoresAdded'] = [];
@@ -136,6 +154,7 @@ export const useGameStore = create<GameStore>()(
           let newScore = oldScore + pointsAdded;
           let bonusApplied = false;
           let bonusAmount = 0;
+          let streakBonusApplied = false;
 
           // Check if hit multiple of 50 (bonus trigger)
           if (newScore > 0 && newScore % 50 === 0 && houseRules.bonusType !== 'none') {
@@ -149,11 +168,18 @@ export const useGameStore = create<GameStore>()(
             }
           }
 
+          // Apply 3-win streak bonus to the Yaniv caller
+          if (player.id === yanivCallerId && hasWinStreak) {
+            streakBonusApplied = true;
+            newScore = newScore - 25;
+          }
+
           scoresAdded.push({
             playerId: player.id,
             pointsAdded,
             bonusApplied,
             bonusAmount,
+            streakBonusApplied,
             finalScore: newScore,
           });
         }
