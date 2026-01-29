@@ -809,8 +809,6 @@ export default function GamePlayPage() {
                                 style={{
                                   backgroundColor: winner.color,
                                   animationDelay: '0.3s',
-                                  opacity: 0,
-                                  animationFillMode: 'forwards',
                                 }}
                               >
                                 {getInitials(winner.name)}
@@ -821,8 +819,6 @@ export default function GamePlayPage() {
                                 style={{
                                   background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 40%, #C9972D 100%)',
                                   boxShadow: '0 -4px 20px rgba(229, 185, 74, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
-                                  opacity: 0,
-                                  animationFillMode: 'forwards',
                                 }}
                               >
                                 <span className="text-3xl drop-shadow-lg">🥇</span>
@@ -847,8 +843,6 @@ export default function GamePlayPage() {
                               style={{
                                 backgroundColor: third.color,
                                 animationDelay: '0.25s',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               {getInitials(third.name)}
@@ -858,8 +852,6 @@ export default function GamePlayPage() {
                               style={{
                                 background: 'linear-gradient(180deg, #DDA15E 0%, #CD7F32 50%, #A0522D 100%)',
                                 boxShadow: '0 -2px 12px rgba(205, 127, 50, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               <span className="text-xl">🥉</span>
@@ -877,8 +869,6 @@ export default function GamePlayPage() {
                               style={{
                                 backgroundColor: second.color,
                                 animationDelay: '0.25s',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               {getInitials(second.name)}
@@ -888,8 +878,6 @@ export default function GamePlayPage() {
                               style={{
                                 background: 'linear-gradient(180deg, #E8E8E8 0%, #C0C0C0 50%, #A0A0A0 100%)',
                                 boxShadow: '0 -2px 16px rgba(192, 192, 192, 0.3), inset 0 1px 0 rgba(255,255,255,0.4)',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               <span className="text-2xl">🥈</span>
@@ -907,8 +895,6 @@ export default function GamePlayPage() {
                               style={{
                                 backgroundColor: first.color,
                                 animationDelay: '0.35s',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               {getInitials(first.name)}
@@ -918,8 +904,6 @@ export default function GamePlayPage() {
                               style={{
                                 background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 40%, #C9972D 100%)',
                                 boxShadow: '0 -4px 20px rgba(229, 185, 74, 0.4), inset 0 2px 0 rgba(255,255,255,0.3)',
-                                opacity: 0,
-                                animationFillMode: 'forwards',
                               }}
                             >
                               <span className="text-3xl drop-shadow-lg">🥇</span>
@@ -935,7 +919,7 @@ export default function GamePlayPage() {
 
                 {/* "Winner!" text that fades in */}
                 {showConfetti && (
-                  <div className="mt-8 animate-results-reveal" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="mt-8 animate-results-reveal" style={{ animationDelay: '0.5s' }}>
                     <h2 className="text-[#E5B94A] text-2xl font-display font-bold text-center tracking-wide">
                       🎉 Winner! 🎉
                     </h2>
@@ -950,7 +934,7 @@ export default function GamePlayPage() {
                 {/* Mini podium at top */}
                 <div
                   className="flex items-end justify-center gap-1 mb-5 animate-results-reveal"
-                  style={{ opacity: 0, animationDelay: '0s', animationFillMode: 'forwards' }}
+                  style={{ animationDelay: '0s' }}
                 >
                   {(() => {
                     const sorted = getSortedPlayers();
@@ -1020,7 +1004,7 @@ export default function GamePlayPage() {
 
                 <h2
                   className="text-[#F4D68C] text-lg font-display font-bold text-center mb-4 animate-results-reveal"
-                  style={{ opacity: 0, animationDelay: '0.1s', animationFillMode: 'forwards' }}
+                  style={{ animationDelay: '0.1s' }}
                 >
                   Final Tally
                 </h2>
@@ -1032,9 +1016,7 @@ export default function GamePlayPage() {
                     background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
                     border: '2px solid rgba(229, 185, 74, 0.2)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                    opacity: 0,
                     animationDelay: '0.15s',
-                    animationFillMode: 'forwards',
                   }}
                 >
                   {/* Header */}
@@ -1050,7 +1032,7 @@ export default function GamePlayPage() {
                     <div
                       key={player.id}
                       className="flex items-center py-2 animate-results-reveal"
-                      style={{ opacity: 0, animationDelay: `${0.25 + index * 0.08}s`, animationFillMode: 'forwards' }}
+                      style={{ animationDelay: `${0.25 + index * 0.08}s` }}
                     >
                       <div className="flex-1 flex items-center gap-3">
                         <div
@@ -1077,7 +1059,7 @@ export default function GamePlayPage() {
                 {/* Yan Highlights */}
                 <div
                   className="flex items-center justify-center gap-2 mb-4 animate-results-reveal"
-                  style={{ opacity: 0, animationDelay: '0.5s', animationFillMode: 'forwards' }}
+                  style={{ animationDelay: '0.5s' }}
                 >
                   <div className="flex-1 h-px bg-[#C9972D]/20" />
                   <span className="text-[#F4D68C]/60 text-sm font-body">Yan Highlights</span>
@@ -1091,9 +1073,7 @@ export default function GamePlayPage() {
                     background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
                     border: '2px solid rgba(229, 185, 74, 0.2)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                    opacity: 0,
                     animationDelay: '0.55s',
-                    animationFillMode: 'forwards',
                   }}
                 >
                   {highlights && (
@@ -1254,7 +1234,7 @@ export default function GamePlayPage() {
                 {/* Share and New Game buttons */}
                 <div
                   className="mt-auto pt-6 space-y-3 animate-results-reveal"
-                  style={{ opacity: 0, animationDelay: '0.7s', animationFillMode: 'forwards' }}
+                  style={{ animationDelay: '0.7s' }}
                 >
                   <button
                     onClick={handleShare}

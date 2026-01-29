@@ -399,15 +399,15 @@ body {
 }
 
 .animate-plinth-rise {
-  animation: plinth-rise 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: plinth-rise 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-gold-plinth-rise {
-  animation: gold-plinth-rise 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: gold-plinth-rise 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-avatar-drop {
-  animation: avatar-drop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: avatar-drop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-winner-spotlight {
@@ -431,7 +431,7 @@ body {
 }
 
 .animate-results-reveal {
-  animation: results-reveal 0.6s ease-out forwards;
+  animation: results-reveal 0.6s ease-out both;
 }
 
 /* Staggered animation delays */
