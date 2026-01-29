@@ -2,6 +2,8 @@
 
 A mobile-friendly web app for tracking scores in the card game **Yaniv**. Built with Next.js, TypeScript, and Tailwind CSS.
 
+**[Try it live](https://yaniv-score-tracker-ten.vercel.app/)**
+
 ## Screenshots
 
 | Homepage | Add Players | Enter Scores |
