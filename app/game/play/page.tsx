@@ -441,7 +441,7 @@ export default function GamePlayPage() {
     });
   };
 
-  // Handle clicking a highlight to preview that round
+  // Handle clicking a highlight to preview that round (use inline preview)
   const handleHighlightClick = (roundIndex: number) => {
     setPreviewingHighlightRound(roundIndex);
     setTimeout(() => setPreviewingHighlightRound(null), 5000);
@@ -566,7 +566,7 @@ export default function GamePlayPage() {
           </div>
 
           {/* Rounds grid */}
-          <div className="space-y-1 overflow-hidden max-h-[50vh] overflow-y-auto">
+          <div className="space-y-1 overflow-hidden flex-1 overflow-y-auto">
             {rounds.length === 0 && (
               <div className="text-center py-8 text-[#F4D68C]/40 text-sm font-body">
                 Tap below to add first round
@@ -689,59 +689,87 @@ export default function GamePlayPage() {
           <div className="relative z-10 flex-1 flex flex-col max-w-lg mx-auto w-full p-6">
             {/* Confirmation Phase */}
             {postGamePhase === 'confirmation' && (
-              <div className="flex-1 flex flex-col items-center justify-center text-center animate-card-enter">
-                <div className="text-5xl mb-6">🎴</div>
-                <h2 className="text-[#F4D68C] text-2xl font-display font-bold mb-4">
-                  Game Ended
-                </h2>
-                <p className="text-[#F5F0E1]/80 text-lg font-body mb-2">
-                  {getLoserInfo()
-                    ? `${getLoserInfo()} passed ${houseRules.maxScore} points which ends the game.`
-                    : `All ${houseRules.maxRounds} rounds complete!`}
-                </p>
-                <p className="text-[#F5F0E1]/60 text-sm font-body mb-10">
-                  Click see results to see where everyone finished and game highlights.
-                </p>
+              <div className="flex-1 flex flex-col animate-card-enter">
+                {/* Cancel button */}
                 <button
-                  onClick={handleSeeResults}
-                  className="px-10 py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#1A1A1A] tracking-wide font-body"
-                  style={{
-                    background: 'linear-gradient(180deg, #10B981 0%, #059669 100%)',
-                    boxShadow: '0 4px 0 #047857, 0 6px 12px rgba(0,0,0,0.25)',
-                    color: '#F5F0E1',
-                  }}
+                  onClick={() => setPostGamePhase(null)}
+                  className="text-[#F4D68C]/60 text-sm font-body px-2 py-2 -mx-2 -my-2 rounded-lg hover:bg-[#F4D68C]/10 active:bg-[#F4D68C]/20 transition-colors self-start mb-6"
                 >
-                  See results
+                  ← Cancel
                 </button>
+
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <div className="text-5xl mb-6">🎴</div>
+                  <h2 className="text-[#F4D68C] text-2xl font-display font-bold mb-4">
+                    Game Ended
+                  </h2>
+                  <p className="text-[#F5F0E1]/80 text-lg font-body mb-2">
+                    {getLoserInfo()
+                      ? `${getLoserInfo()} passed ${houseRules.maxScore} points which ends the game.`
+                      : `All ${houseRules.maxRounds} rounds complete!`}
+                  </p>
+                  <p className="text-[#F5F0E1]/60 text-sm font-body mb-10">
+                    Click see results to see where everyone finished and game highlights.
+                  </p>
+                  <button
+                    onClick={handleSeeResults}
+                    className="px-10 py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#1A1A1A] tracking-wide font-body"
+                    style={{
+                      background: 'linear-gradient(180deg, #10B981 0%, #059669 100%)',
+                      boxShadow: '0 4px 0 #047857, 0 6px 12px rgba(0,0,0,0.25)',
+                      color: '#F5F0E1',
+                    }}
+                  >
+                    See results
+                  </button>
+                </div>
               </div>
             )}
 
             {/* Podium Phase */}
             {postGamePhase === 'podium' && (
-              <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="flex-1 flex flex-col items-center justify-start pt-16">
                 {/* Confetti burst effect */}
                 {showConfetti && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="animate-confetti-burst w-64 h-64 rounded-full bg-gradient-radial from-[#E5B94A]/40 to-transparent" />
-                    {/* Sparkles */}
-                    {[...Array(12)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute text-2xl animate-sparkle"
-                        style={{
-                          top: `${30 + Math.random() * 40}%`,
-                          left: `${20 + Math.random() * 60}%`,
-                          animationDelay: `${i * 0.1}s`,
-                        }}
-                      >
-                        ✨
-                      </div>
-                    ))}
+                  <div className="absolute inset-0 flex items-start justify-center pt-24 pointer-events-none overflow-hidden">
+                    {/* Central glow burst */}
+                    <div className="animate-confetti-burst w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(229, 185, 74, 0.4) 0%, transparent 70%)' }} />
+                    {/* CSS Particle effects */}
+                    {[...Array(16)].map((_, i) => {
+                      const angle = (i / 16) * 360;
+                      const distance = 80 + (i % 3) * 40;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute w-2 h-2 rounded-full animate-sparkle"
+                          style={{
+                            background: i % 3 === 0 ? '#E5B94A' : i % 3 === 1 ? '#F4D68C' : '#C9972D',
+                            top: `${20 + Math.sin(angle * Math.PI / 180) * 15}%`,
+                            left: `${50 + Math.cos(angle * Math.PI / 180) * 20}%`,
+                            animationDelay: `${i * 0.08}s`,
+                            boxShadow: `0 0 8px ${i % 3 === 0 ? '#E5B94A' : i % 3 === 1 ? '#F4D68C' : '#C9972D'}`,
+                          }}
+                        />
+                      );
+                    })}
+                    {/* Radial rays */}
+                    <div className="absolute top-24 left-1/2 -translate-x-1/2 w-48 h-48 animate-spin" style={{ animation: 'spin 8s linear infinite', opacity: 0.15 }}>
+                      {[...Array(8)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute top-1/2 left-1/2 w-1 h-24 origin-bottom"
+                          style={{
+                            background: 'linear-gradient(to top, #E5B94A, transparent)',
+                            transform: `rotate(${i * 45}deg) translateX(-50%)`,
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {/* Podium */}
-                <div className="flex items-end justify-center gap-2 mt-auto mb-16">
+                <div className="flex items-end justify-center gap-2 mt-8">
                   {(() => {
                     const sorted = getSortedPlayers();
                     const isTwoPlayers = sorted.length === 2;
@@ -866,7 +894,80 @@ export default function GamePlayPage() {
             {/* Results Phase */}
             {postGamePhase === 'results' && (
               <div className="flex-1 flex flex-col animate-card-enter py-4">
-                <h2 className="text-[#F4D68C] text-xl font-display font-bold text-center mb-6">
+                {/* Mini podium at top */}
+                <div className="flex items-end justify-center gap-1 mb-6">
+                  {(() => {
+                    const sorted = getSortedPlayers();
+                    const isTwoPlayers = sorted.length === 2;
+                    const medals = ['🥇', '🥈', '🥉'];
+
+                    if (isTwoPlayers) {
+                      const winner = sorted[0];
+                      return (
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg font-body mb-1"
+                            style={{ backgroundColor: winner.color, boxShadow: '0 0 20px rgba(229, 185, 74, 0.4)' }}
+                          >
+                            {getInitials(winner.name)}
+                          </div>
+                          <span className="text-xl">🥇</span>
+                        </div>
+                      );
+                    }
+
+                    // 3+ players - show podium order: Silver, Gold, Bronze
+                    const [first, second, third] = sorted;
+                    return (
+                      <>
+                        {/* Silver */}
+                        {second && (
+                          <div className="flex flex-col items-center">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm font-body mb-1"
+                              style={{ backgroundColor: second.color }}
+                            >
+                              {getInitials(second.name)}
+                            </div>
+                            <div className="w-14 h-12 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #E8E8E8 0%, #A0A0A0 100%)' }}>
+                              <span className="text-sm">🥈</span>
+                            </div>
+                          </div>
+                        )}
+                        {/* Gold */}
+                        {first && (
+                          <div className="flex flex-col items-center -mx-0.5">
+                            <div
+                              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base font-body mb-1"
+                              style={{ backgroundColor: first.color, boxShadow: '0 0 20px rgba(229, 185, 74, 0.4)' }}
+                            >
+                              {getInitials(first.name)}
+                            </div>
+                            <div className="w-16 h-16 rounded-t-md flex items-start justify-center pt-1" style={{ background: 'linear-gradient(180deg, #F4D68C 0%, #C9972D 100%)' }}>
+                              <span className="text-lg">🥇</span>
+                            </div>
+                          </div>
+                        )}
+                        {/* Bronze */}
+                        {third && (
+                          <div className="flex flex-col items-center">
+                            <div
+                              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs font-body mb-1"
+                              style={{ backgroundColor: third.color }}
+                            >
+                              {getInitials(third.name)}
+                            </div>
+                            <div className="w-12 h-8 rounded-t-md flex items-start justify-center pt-0.5" style={{ background: 'linear-gradient(180deg, #DDA15E 0%, #A0522D 100%)' }}>
+                              <span className="text-xs">🥉</span>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <h2 className="text-[#F4D68C] text-lg font-display font-bold text-center mb-4">
                   Final Tally
                 </h2>
 
@@ -955,51 +1056,119 @@ export default function GamePlayPage() {
                       )}
 
                       {/* Lowest hand */}
-                      <div
-                        className="flex items-center justify-between cursor-pointer hover:bg-[#F4D68C]/10 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                        onClick={() => handleHighlightClick(highlights.lowestHand.roundIndex)}
-                      >
-                        <span className="text-[#F5F0E1]/70 font-body">Lowest hand</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#10B981] font-score font-bold">{highlights.lowestHand.score}</span>
-                          <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.lowestHand.playerId)?.name || '')}</span>
+                      <div className="space-y-2">
+                        <div
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                            previewingHighlightRound === highlights.lowestHand.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
+                          }`}
+                          onClick={() => handleHighlightClick(highlights.lowestHand.roundIndex)}
+                        >
+                          <span className="text-[#F5F0E1]/70 font-body">Lowest hand</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[#10B981] font-score font-bold">{highlights.lowestHand.score}</span>
+                            <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.lowestHand.playerId)?.name || '')}</span>
+                          </div>
                         </div>
+                        {previewingHighlightRound === highlights.lowestHand.roundIndex && (
+                          <div className="flex items-center gap-2 py-2 px-2 -mx-2 bg-[#3B82F6]/10 rounded-lg animate-card-enter">
+                            <span className="text-[#3B82F6] text-xs font-body w-8">R{highlights.lowestHand.roundIndex + 1}</span>
+                            {players.map((player) => {
+                              const handScore = rounds[highlights.lowestHand.roundIndex]?.playerHands.find(h => h.playerId === player.id)?.handTotal ?? 0;
+                              return (
+                                <div key={player.id} className="flex-1 text-center">
+                                  <span className="text-[#3B82F6] font-score text-sm">{handScore}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Worst hand */}
-                      <div
-                        className="flex items-center justify-between cursor-pointer hover:bg-[#F4D68C]/10 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                        onClick={() => handleHighlightClick(highlights.worstHand.roundIndex)}
-                      >
-                        <span className="text-[#F5F0E1]/70 font-body">Worst hand</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#C41E3A] font-score font-bold">{highlights.worstHand.score}</span>
-                          <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.worstHand.playerId)?.name || '')}</span>
+                      <div className="space-y-2">
+                        <div
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                            previewingHighlightRound === highlights.worstHand.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
+                          }`}
+                          onClick={() => handleHighlightClick(highlights.worstHand.roundIndex)}
+                        >
+                          <span className="text-[#F5F0E1]/70 font-body">Worst hand</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[#C41E3A] font-score font-bold">{highlights.worstHand.score}</span>
+                            <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.worstHand.playerId)?.name || '')}</span>
+                          </div>
                         </div>
+                        {previewingHighlightRound === highlights.worstHand.roundIndex && (
+                          <div className="flex items-center gap-2 py-2 px-2 -mx-2 bg-[#3B82F6]/10 rounded-lg animate-card-enter">
+                            <span className="text-[#3B82F6] text-xs font-body w-8">R{highlights.worstHand.roundIndex + 1}</span>
+                            {players.map((player) => {
+                              const handScore = rounds[highlights.worstHand.roundIndex]?.playerHands.find(h => h.playerId === player.id)?.handTotal ?? 0;
+                              return (
+                                <div key={player.id} className="flex-1 text-center">
+                                  <span className="text-[#3B82F6] font-score text-sm">{handScore}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Worst round */}
-                      <div
-                        className="flex items-center justify-between cursor-pointer hover:bg-[#F4D68C]/10 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                        onClick={() => handleHighlightClick(highlights.worstRound.roundIndex)}
-                      >
-                        <span className="text-[#F5F0E1]/70 font-body">Worst round</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#C41E3A] font-score font-bold">{highlights.worstRound.totalScore}</span>
-                          <span className="text-[#E5B94A] font-body">R{highlights.worstRound.roundIndex + 1}</span>
+                      <div className="space-y-2">
+                        <div
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                            previewingHighlightRound === highlights.worstRound.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
+                          }`}
+                          onClick={() => handleHighlightClick(highlights.worstRound.roundIndex)}
+                        >
+                          <span className="text-[#F5F0E1]/70 font-body">Worst round</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[#C41E3A] font-score font-bold">{highlights.worstRound.totalScore}</span>
+                            <span className="text-[#E5B94A] font-body">R{highlights.worstRound.roundIndex + 1}</span>
+                          </div>
                         </div>
+                        {previewingHighlightRound === highlights.worstRound.roundIndex && (
+                          <div className="flex items-center gap-2 py-2 px-2 -mx-2 bg-[#3B82F6]/10 rounded-lg animate-card-enter">
+                            <span className="text-[#3B82F6] text-xs font-body w-8">R{highlights.worstRound.roundIndex + 1}</span>
+                            {players.map((player) => {
+                              const handScore = rounds[highlights.worstRound.roundIndex]?.playerHands.find(h => h.playerId === player.id)?.handTotal ?? 0;
+                              return (
+                                <div key={player.id} className="flex-1 text-center">
+                                  <span className="text-[#3B82F6] font-score text-sm">{handScore}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Best round */}
-                      <div
-                        className="flex items-center justify-between cursor-pointer hover:bg-[#F4D68C]/10 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                        onClick={() => handleHighlightClick(highlights.bestRound.roundIndex)}
-                      >
-                        <span className="text-[#F5F0E1]/70 font-body">Best round</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#10B981] font-score font-bold">{highlights.bestRound.totalScore}</span>
-                          <span className="text-[#E5B94A] font-body">R{highlights.bestRound.roundIndex + 1}</span>
+                      <div className="space-y-2">
+                        <div
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                            previewingHighlightRound === highlights.bestRound.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
+                          }`}
+                          onClick={() => handleHighlightClick(highlights.bestRound.roundIndex)}
+                        >
+                          <span className="text-[#F5F0E1]/70 font-body">Best round</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[#10B981] font-score font-bold">{highlights.bestRound.totalScore}</span>
+                            <span className="text-[#E5B94A] font-body">R{highlights.bestRound.roundIndex + 1}</span>
+                          </div>
                         </div>
+                        {previewingHighlightRound === highlights.bestRound.roundIndex && (
+                          <div className="flex items-center gap-2 py-2 px-2 -mx-2 bg-[#3B82F6]/10 rounded-lg animate-card-enter">
+                            <span className="text-[#3B82F6] text-xs font-body w-8">R{highlights.bestRound.roundIndex + 1}</span>
+                            {players.map((player) => {
+                              const handScore = rounds[highlights.bestRound.roundIndex]?.playerHands.find(h => h.playerId === player.id)?.handTotal ?? 0;
+                              return (
+                                <div key={player.id} className="flex-1 text-center">
+                                  <span className="text-[#3B82F6] font-score text-sm">{handScore}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Most bonuses */}
@@ -1016,32 +1185,6 @@ export default function GamePlayPage() {
                   )}
                 </div>
 
-                {/* Round preview overlay */}
-                {previewingHighlightRound !== null && rounds[previewingHighlightRound] && (
-                  <div className="fixed inset-0 z-60 bg-[#0B3D2E]/95 flex items-center justify-center animate-modal-enter">
-                    <div className="text-center animate-card-enter">
-                      <p className="text-[#F4D68C] text-lg mb-6 font-body">Round {previewingHighlightRound + 1} hands</p>
-                      <div className="flex justify-center gap-6">
-                        {players.map((player) => {
-                          const handScore = rounds[previewingHighlightRound].playerHands.find(h => h.playerId === player.id)?.handTotal ?? 0;
-                          return (
-                            <div key={player.id} className="text-center">
-                              <div
-                                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold font-body mx-auto mb-2"
-                                style={{ backgroundColor: player.color }}
-                              >
-                                {getInitials(player.name)}
-                              </div>
-                              <span className="text-[#3B82F6] font-score text-2xl">
-                                {handScore}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Share and New Game buttons */}
                 <div className="mt-auto pt-6 space-y-3">
@@ -1300,7 +1443,7 @@ export default function GamePlayPage() {
                   {/* Score display */}
                   <div className="text-center mb-6">
                     <span className={`font-score text-7xl ${isNegative ? 'text-[#10B981]' : 'text-[#F5F0E1]'}`}>
-                      {isNegative && inputValue ? '-' : ''}{inputValue || '0'}
+                      {isNegative ? '-' : ''}{inputValue || '0'}
                     </span>
                     <div className={`w-24 h-1 mx-auto mt-2 rounded-full ${isNegative ? 'bg-[#10B981]' : 'bg-[#E5B94A]'}`} />
                   </div>
