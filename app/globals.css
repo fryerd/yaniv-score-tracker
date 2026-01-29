@@ -248,20 +248,13 @@ body {
   animation: input-pop 0.15s ease-out;
 }
 
-/* Podium animations - Theatrical reveal sequence */
+/* Podium animations - Smooth reveal sequence */
 
-/* Plinth rises from below with slight bounce */
+/* Plinth rises smoothly from below */
 @keyframes plinth-rise {
   0% {
-    transform: translateY(150%);
+    transform: translateY(100%);
     opacity: 0;
-  }
-  60% {
-    transform: translateY(-8%);
-    opacity: 1;
-  }
-  80% {
-    transform: translateY(4%);
   }
   100% {
     transform: translateY(0);
@@ -269,21 +262,11 @@ body {
   }
 }
 
-/* Avatar drops in with elastic bounce */
+/* Avatar fades in and scales up */
 @keyframes avatar-drop {
   0% {
-    transform: translateY(-60px) scale(0);
+    transform: translateY(-20px) scale(0.8);
     opacity: 0;
-  }
-  40% {
-    transform: translateY(8px) scale(1.15);
-    opacity: 1;
-  }
-  60% {
-    transform: translateY(-4px) scale(0.95);
-  }
-  80% {
-    transform: translateY(2px) scale(1.02);
   }
   100% {
     transform: translateY(0) scale(1);
@@ -291,56 +274,39 @@ body {
   }
 }
 
-/* Gold plinth - grander entrance */
+/* Gold plinth - slightly larger entrance */
 @keyframes gold-plinth-rise {
   0% {
-    transform: translateY(180%) scale(0.9);
+    transform: translateY(100%);
     opacity: 0;
   }
-  50% {
-    transform: translateY(-12%) scale(1.02);
-    opacity: 1;
-  }
-  70% {
-    transform: translateY(6%) scale(0.98);
-  }
-  85% {
-    transform: translateY(-2%) scale(1.01);
-  }
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
-/* Winner spotlight pulse */
+/* Winner spotlight - subtle glow */
 @keyframes winner-spotlight {
   0% {
     box-shadow: 0 0 0 0 rgba(229, 185, 74, 0),
-                0 4px 20px rgba(229, 185, 74, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 60px 20px rgba(229, 185, 74, 0.3),
-                0 4px 30px rgba(229, 185, 74, 0.6);
+                0 4px 20px rgba(229, 185, 74, 0.3);
   }
   100% {
-    box-shadow: 0 0 40px 10px rgba(229, 185, 74, 0.15),
+    box-shadow: 0 0 20px 5px rgba(229, 185, 74, 0.2),
                 0 4px 20px rgba(229, 185, 74, 0.4);
   }
 }
 
-/* Celebratory glow that pulses */
+/* Subtle winner glow */
 @keyframes winner-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(229, 185, 74, 0.5),
-                0 0 40px rgba(229, 185, 74, 0.3),
-                inset 0 0 20px rgba(229, 185, 74, 0.1);
+    box-shadow: 0 0 12px rgba(229, 185, 74, 0.4),
+                0 0 24px rgba(229, 185, 74, 0.2);
   }
   50% {
-    box-shadow: 0 0 50px rgba(229, 185, 74, 0.8),
-                0 0 80px rgba(229, 185, 74, 0.5),
-                0 0 120px rgba(229, 185, 74, 0.3),
-                inset 0 0 30px rgba(229, 185, 74, 0.2);
+    box-shadow: 0 0 20px rgba(229, 185, 74, 0.5),
+                0 0 32px rgba(229, 185, 74, 0.3);
   }
 }
 
@@ -386,11 +352,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Results slide up */
+/* Results fade in smoothly */
 @keyframes results-reveal {
   0% {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(16px);
   }
   100% {
     opacity: 1;
@@ -399,15 +365,15 @@ body {
 }
 
 .animate-plinth-rise {
-  animation: plinth-rise 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: plinth-rise 0.4s ease-out both;
 }
 
 .animate-gold-plinth-rise {
-  animation: gold-plinth-rise 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: gold-plinth-rise 0.5s ease-out both;
 }
 
 .animate-avatar-drop {
-  animation: avatar-drop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: avatar-drop 0.35s ease-out both;
 }
 
 .animate-winner-spotlight {
@@ -431,7 +397,7 @@ body {
 }
 
 .animate-results-reveal {
-  animation: results-reveal 0.6s ease-out both;
+  animation: results-reveal 0.4s ease-out both;
 }
 
 /* Staggered animation delays */

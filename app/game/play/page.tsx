@@ -930,7 +930,9 @@ export default function GamePlayPage() {
 
             {/* Results Phase */}
             {postGamePhase === 'results' && (
-              <div className="flex-1 flex flex-col py-4 overflow-y-auto">
+              <div className="flex-1 flex flex-col relative">
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto py-4 pb-40">
                 {/* Mini podium at top */}
                 <div
                   className="flex items-end justify-center gap-1 mb-5 animate-results-reveal"
@@ -1231,10 +1233,15 @@ export default function GamePlayPage() {
                 </div>
 
 
-                {/* Share and New Game buttons */}
+                </div>
+
+                {/* Sticky Share and New Game buttons at bottom */}
                 <div
-                  className="mt-auto pt-6 space-y-3 animate-results-reveal"
-                  style={{ animationDelay: '0.7s' }}
+                  className="absolute bottom-0 left-0 right-0 pt-4 pb-4 space-y-3 animate-results-reveal"
+                  style={{
+                    animationDelay: '0.5s',
+                    background: 'linear-gradient(to top, #0B3D2E 70%, transparent 100%)',
+                  }}
                 >
                   <button
                     onClick={handleShare}

@@ -273,7 +273,7 @@ export default function NewGamePage() {
                 Tap to customize
               </p>
 
-              <div className="flex-1 space-y-3 mb-8">
+              <div className="flex-1 space-y-3 mb-8 overflow-y-auto">
                 {/* False Yaniv Card */}
                 <div
                   onClick={() => toggleRule('falseYaniv')}
