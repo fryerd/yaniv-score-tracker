@@ -55,7 +55,7 @@ export default function NewGamePage() {
     falseYanivPenalty: 25,
     bystandersScoreOnFalseYaniv: false,
     bonusType: 'subtract25',
-    winStreakBonus: false,
+    winStreakBonus: true,
     endGameMode: 'highScore',
     maxScore: 150,
     maxRounds: 10
@@ -265,7 +265,7 @@ export default function NewGamePage() {
 
           {/* Step 3: House Rules */}
           {step === 3 && (
-            <div className="flex-1 flex flex-col animate-card-enter">
+            <div className="flex-1 flex flex-col min-h-0 animate-card-enter">
               <h1 className="text-3xl font-bold text-[#F5F0E1] mb-2 font-display text-center">
                 House Rules
               </h1>
@@ -273,7 +273,7 @@ export default function NewGamePage() {
                 Tap to customize
               </p>
 
-              <div className="flex-1 space-y-3 mb-8 overflow-y-auto">
+              <div className="flex-1 space-y-3 mb-4 overflow-y-auto min-h-0 pb-4">
                 {/* False Yaniv Card */}
                 <div
                   onClick={() => toggleRule('falseYaniv')}
