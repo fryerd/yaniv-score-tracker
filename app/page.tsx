@@ -109,7 +109,7 @@ export default function Home() {
               {/* Secondary Button: Continue Game */}
               {hasSavedGame ? (
                 <Link
-                  href="/game/current"
+                  href="/game/play"
                   className="group w-full relative py-4 px-8 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] active:translate-y-[2px] hover:brightness-110 hover:border-[#E5B94A]/40 cursor-pointer block text-center"
                   style={{
                     background: 'linear-gradient(to bottom, #14785A, #0F5740)',
