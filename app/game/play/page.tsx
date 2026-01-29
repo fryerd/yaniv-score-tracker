@@ -25,6 +25,7 @@ export default function GamePlayPage() {
   const [animatedScores, setAnimatedScores] = useState<{ [playerId: string]: number }>({});
   const [animatedTotals, setAnimatedTotals] = useState<{ [playerId: string]: number }>({});
   const [showYanivWarning, setShowYanivWarning] = useState(false);
+  const [showHighScoreWarning, setShowHighScoreWarning] = useState(false);
 
   // State for showing hand scores when tapping a round
   const [showingHandScoresForRound, setShowingHandScoresForRound] = useState<number | null>(null);
@@ -95,18 +96,25 @@ export default function GamePlayPage() {
   };
 
   // Submit current player's score and move to next
-  const handleSubmitPlayerScore = (confirmedHighScore = false) => {
+  const handleSubmitPlayerScore = (confirmedWarning = false) => {
     const currentPlayer = playerInputOrder[currentPlayerIndex];
     const rawValue = parseInt(inputValue) || 0;
     const score = isNegative ? -rawValue : rawValue;
 
     // Check if this is the Yaniv caller (first player) and their score is > 5
-    if (currentPlayerIndex === 0 && score > 5 && !confirmedHighScore) {
+    if (currentPlayerIndex === 0 && score > 5 && !confirmedWarning) {
       setShowYanivWarning(true);
       return;
     }
 
+    // Check if score is unusually high (> 30) for any player
+    if (score > 30 && !confirmedWarning) {
+      setShowHighScoreWarning(true);
+      return;
+    }
+
     setShowYanivWarning(false);
+    setShowHighScoreWarning(false);
     const newScores = { ...roundScores, [currentPlayer.id]: score };
     setRoundScores(newScores);
 
@@ -549,6 +557,48 @@ export default function GamePlayPage() {
                     className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-white font-body"
                     style={{
                       background: 'linear-gradient(180deg, #EF4444 0%, #B91C1C 100%)',
+                    }}
+                  >
+                    Yes, Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Unusually high hand score warning */}
+          {showHighScoreWarning && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0B3D2E]/95">
+              <div className="text-center animate-card-enter p-6 rounded-2xl max-w-xs"
+                style={{
+                  background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
+                  border: '2px solid rgba(245, 158, 11, 0.4)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                }}
+              >
+                <div className="text-3xl mb-3">🤔</div>
+                <p className="text-[#F4D68C] text-lg mb-2 font-body font-semibold">
+                  Very High Score
+                </p>
+                <p className="text-[#F5F0E1]/80 text-sm mb-6 font-body">
+                  That&apos;s a very high score for one hand. Are you sure {getFirstName(playerInputOrder[currentPlayerIndex]?.name)} had {inputValue} points?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowHighScoreWarning(false)}
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-[#F5F0E1] font-body"
+                    style={{
+                      background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
+                      border: '1px solid rgba(229, 185, 74, 0.2)',
+                    }}
+                  >
+                    Go Back
+                  </button>
+                  <button
+                    onClick={() => handleSubmitPlayerScore(true)}
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-white font-body"
+                    style={{
+                      background: 'linear-gradient(180deg, #F59E0B 0%, #D97706 100%)',
                     }}
                   >
                     Yes, Continue
