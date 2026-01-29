@@ -427,7 +427,7 @@ export default function GamePlayPage() {
                       >
                         <span className="min-w-[1rem] text-center">
                           {!showingHands && isWinner && (
-                            <span className="text-xs text-[#F4D68C]">♔</span>
+                            <span className="text-xs text-[#F4D68C] inline-block animate-crown-float">♔</span>
                           )}
                           {!showingHands && isFalseYanivCaller && (
                             <span className="text-xs text-[#C41E3A]">✗</span>
@@ -533,7 +533,7 @@ export default function GamePlayPage() {
 
           {/* Yaniv high score warning */}
           {showYanivWarning && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0B3D2E]/95">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0B3D2E]/95 animate-modal-enter backdrop-blur-sm">
               <div className="text-center animate-card-enter p-6 rounded-2xl max-w-xs"
                 style={{
                   background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
@@ -551,7 +551,7 @@ export default function GamePlayPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowYanivWarning(false)}
-                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-[#F5F0E1] font-body"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:brightness-110 text-[#F5F0E1] font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C]"
                     style={{
                       background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
                       border: '1px solid rgba(229, 185, 74, 0.2)',
@@ -561,7 +561,7 @@ export default function GamePlayPage() {
                   </button>
                   <button
                     onClick={() => handleSubmitPlayerScore(true)}
-                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-white font-body"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:brightness-110 text-white font-body focus-visible:ring-2 focus-visible:ring-[#EF4444]"
                     style={{
                       background: 'linear-gradient(180deg, #EF4444 0%, #B91C1C 100%)',
                     }}
@@ -575,7 +575,7 @@ export default function GamePlayPage() {
 
           {/* Unusually high hand score warning */}
           {showHighScoreWarning && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0B3D2E]/95">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0B3D2E]/95 animate-modal-enter backdrop-blur-sm">
               <div className="text-center animate-card-enter p-6 rounded-2xl max-w-xs"
                 style={{
                   background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
@@ -593,7 +593,7 @@ export default function GamePlayPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowHighScoreWarning(false)}
-                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-[#F5F0E1] font-body"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:brightness-110 text-[#F5F0E1] font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C]"
                     style={{
                       background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
                       border: '1px solid rgba(229, 185, 74, 0.2)',
@@ -603,7 +603,7 @@ export default function GamePlayPage() {
                   </button>
                   <button
                     onClick={() => handleSubmitPlayerScore(true)}
-                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 text-white font-body"
+                    className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:brightness-110 text-white font-body focus-visible:ring-2 focus-visible:ring-[#F59E0B]"
                     style={{
                       background: 'linear-gradient(180deg, #F59E0B 0%, #D97706 100%)',
                     }}
@@ -749,8 +749,8 @@ export default function GamePlayPage() {
                   {/* +/- toggle for negative scores (jokers) */}
                   <button
                     onClick={handleToggleNegative}
-                    className={`py-4 rounded-xl text-lg font-bold font-body transition-all active:scale-95 ${
-                      isNegative ? 'text-[#10B981]' : 'text-[#F4D68C]/60'
+                    className={`py-4 rounded-xl text-lg font-bold font-body transition-all active:scale-95 hover:brightness-110 ${
+                      isNegative ? 'text-[#10B981]' : 'text-[#F4D68C]/60 hover:text-[#F4D68C]'
                     }`}
                     style={{
                       background: isNegative

@@ -229,6 +229,25 @@ body {
   animation: modal-enter 0.2s ease-out forwards;
 }
 
+@keyframes crown-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.animate-crown-float {
+  animation: crown-float 2s ease-in-out infinite;
+}
+
+@keyframes input-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-input-pop {
+  animation: input-pop 0.15s ease-out;
+}
+
 /* Staggered animation delays */
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }

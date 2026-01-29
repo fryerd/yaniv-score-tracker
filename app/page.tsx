@@ -91,7 +91,7 @@ export default function Home() {
               {/* Primary Button: New Game */}
               <Link
                 href="/game/new"
-                className="group w-full relative py-5 px-8 rounded-xl transition-all duration-150 active:translate-y-[2px] focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] block text-center"
+                className="group w-full relative py-5 px-8 rounded-xl transition-all duration-150 active:translate-y-[2px] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] block text-center"
                 style={{
                   background: 'linear-gradient(to bottom, #E5B94A, #C9972D)',
                   border: '2px solid rgba(244, 214, 140, 0.4)',
@@ -110,7 +110,7 @@ export default function Home() {
               {hasSavedGame ? (
                 <Link
                   href="/game/current"
-                  className="group w-full relative py-4 px-8 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] active:translate-y-[2px] cursor-pointer block text-center"
+                  className="group w-full relative py-4 px-8 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] active:translate-y-[2px] hover:brightness-110 hover:border-[#E5B94A]/40 cursor-pointer block text-center"
                   style={{
                     background: 'linear-gradient(to bottom, #14785A, #0F5740)',
                     border: '2px solid rgba(201, 151, 45, 0.2)',

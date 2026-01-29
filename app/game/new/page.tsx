@@ -167,7 +167,7 @@ export default function NewGamePage() {
                   <button
                     onClick={() => setPlayerCount(Math.max(2, playerCount - 1))}
                     disabled={playerCount <= 2}
-                    className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                     style={{
                       ...goldButtonStyle,
                       color: '#1A1A1A',
@@ -184,7 +184,7 @@ export default function NewGamePage() {
                       boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)'
                     }}
                   >
-                    <span className="text-6xl font-bold text-[#E5B94A] font-display">
+                    <span className="text-6xl font-bold text-[#E5B94A] font-score leading-none" style={{ paddingTop: '0.1em' }}>
                       {playerCount}
                     </span>
                   </div>
@@ -192,7 +192,7 @@ export default function NewGamePage() {
                   <button
                     onClick={() => setPlayerCount(Math.min(8, playerCount + 1))}
                     disabled={playerCount >= 8}
-                    className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                     style={{
                       ...goldButtonStyle,
                       color: '#1A1A1A',
@@ -209,7 +209,7 @@ export default function NewGamePage() {
 
               <button
                 onClick={handlePlayerCountContinue}
-                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] active:shadow-none text-[#F5F0E1] tracking-wide font-body"
+                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 text-[#F5F0E1] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={primaryButtonStyle}
               >
                 Continue
@@ -254,7 +254,7 @@ export default function NewGamePage() {
               <button
                 onClick={() => setStep(3)}
                 disabled={!canContinueFromNames}
-                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0 text-[#F5F0E1] tracking-wide font-body"
+                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:hover:brightness-100 text-[#F5F0E1] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={canContinueFromNames ? primaryButtonStyle : { background: '#0F5740' }}
               >
                 Continue
@@ -311,7 +311,7 @@ export default function NewGamePage() {
                       <div className="flex items-center justify-center gap-4 mb-5">
                         <button
                           onClick={() => setHouseRules({ ...houseRules, falseYanivPenalty: Math.max(0, houseRules.falseYanivPenalty - 5) })}
-                          className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                          className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                         >
                           −
                         </button>
@@ -320,7 +320,7 @@ export default function NewGamePage() {
                         </div>
                         <button
                           onClick={() => setHouseRules({ ...houseRules, falseYanivPenalty: houseRules.falseYanivPenalty + 5 })}
-                          className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                          className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                         >
                           +
                         </button>
@@ -475,7 +475,7 @@ export default function NewGamePage() {
                           <div className="flex items-center justify-center gap-4">
                             <button
                               onClick={() => setHouseRules({ ...houseRules, maxScore: Math.max(50, houseRules.maxScore - 25) })}
-                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               −
                             </button>
@@ -484,7 +484,7 @@ export default function NewGamePage() {
                             </div>
                             <button
                               onClick={() => setHouseRules({ ...houseRules, maxScore: houseRules.maxScore + 25 })}
-                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               +
                             </button>
@@ -498,7 +498,7 @@ export default function NewGamePage() {
                           <div className="flex items-center justify-center gap-4">
                             <button
                               onClick={() => setHouseRules({ ...houseRules, maxRounds: Math.max(1, houseRules.maxRounds - 1) })}
-                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               −
                             </button>
@@ -507,7 +507,7 @@ export default function NewGamePage() {
                             </div>
                             <button
                               onClick={() => setHouseRules({ ...houseRules, maxRounds: houseRules.maxRounds + 1 })}
-                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 transition-transform"
+                              className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               +
                             </button>
@@ -521,7 +521,7 @@ export default function NewGamePage() {
 
               <button
                 onClick={() => setStep(4)}
-                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] active:shadow-none text-[#F5F0E1] tracking-wide font-body"
+                className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 text-[#F5F0E1] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={primaryButtonStyle}
               >
                 Confirm Rules
@@ -556,7 +556,7 @@ export default function NewGamePage() {
 
                 <div className="space-y-5 max-w-xs">
                   <p className="text-xl font-body text-[#F5F0E1] leading-relaxed">
-                    <span className="text-[#E5B94A] font-semibold">{formatPlayerNames(players)}</span>
+                    <span className="text-[#E5B94A] font-semibold truncate">{formatPlayerNames(players)}</span>
                     {' '}will battle it out for Yaniv glory.
                   </p>
 
@@ -572,7 +572,7 @@ export default function NewGamePage() {
 
               <button
                 onClick={handleStartGame}
-                className="w-full py-5 rounded-2xl font-bold text-xl transition-all duration-150 active:translate-y-[2px] active:shadow-none text-[#1A1A1A] tracking-wide font-body"
+                className="w-full py-5 rounded-2xl font-bold text-xl transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 text-[#1A1A1A] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={goldButtonStyle}
               >
                 Let's Play
