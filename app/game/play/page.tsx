@@ -313,7 +313,7 @@ export default function GamePlayPage() {
                 router.push('/');
               }
             }}
-            className="text-[#E5B94A] text-sm font-body"
+            className="text-[#E5B94A] text-sm font-body px-2 py-2 -mx-2 -my-2 rounded-lg hover:bg-[#E5B94A]/10 active:bg-[#E5B94A]/20 transition-colors"
           >
             ← Exit
           </Link>
@@ -385,6 +385,11 @@ export default function GamePlayPage() {
 
           {/* Rounds grid */}
           <div className="space-y-1 overflow-hidden max-h-[50vh] overflow-y-auto">
+            {rounds.length === 0 && (
+              <div className="text-center py-8 text-[#F4D68C]/40 text-sm font-body">
+                Tap below to add first round
+              </div>
+            )}
             {rounds.map((round, roundIndex) => {
               const winnerId = getRoundWinnerId(round);
               const isFalse = hasFalseYaniv(round);
@@ -420,15 +425,17 @@ export default function GamePlayPage() {
                         key={player.id}
                         className="flex-1 flex justify-center items-center gap-1 transition-all"
                       >
-                        {!showingHands && isWinner && (
-                          <span className="text-xs text-[#F4D68C]">♔</span>
-                        )}
-                        {!showingHands && isFalseYanivCaller && (
-                          <span className="text-xs text-[#C41E3A]">✗</span>
-                        )}
-                        {!showingHands && gotBonus && (
-                          <span className="text-xs text-[#10B981]">★</span>
-                        )}
+                        <span className="min-w-[1rem] text-center">
+                          {!showingHands && isWinner && (
+                            <span className="text-xs text-[#F4D68C]">♔</span>
+                          )}
+                          {!showingHands && isFalseYanivCaller && (
+                            <span className="text-xs text-[#C41E3A]">✗</span>
+                          )}
+                          {!showingHands && gotBonus && (
+                            <span className="text-xs text-[#10B981]">★</span>
+                          )}
+                        </span>
                         <span
                           className={`font-score text-lg transition-all ${
                             showingHands
@@ -467,7 +474,7 @@ export default function GamePlayPage() {
                 resetGame();
                 router.push('/game/new');
               }}
-              className="mt-4 px-6 py-2 rounded-lg bg-[#E5B94A] text-[#1A1A1A] font-semibold font-body"
+              className="mt-4 px-6 py-2 rounded-lg bg-[#E5B94A] text-[#1A1A1A] font-semibold font-body hover:brightness-110 transition-all active:scale-95"
             >
               New Game
             </button>
@@ -478,7 +485,7 @@ export default function GamePlayPage() {
         {!gameEnded && (
           <button
             onClick={handleStartInput}
-            className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] text-[#F5F0E1] tracking-wide font-body"
+            className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#F5F0E1] tracking-wide font-body"
             style={{
               background: 'linear-gradient(180deg, #10B981 0%, #059669 100%)',
               boxShadow: '0 4px 0 #047857, 0 6px 12px rgba(0,0,0,0.25)',
@@ -491,7 +498,7 @@ export default function GamePlayPage() {
 
       {/* Score Input Modal */}
       {isInputting && (
-        <div className="fixed inset-0 z-50 bg-[#0B3D2E] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-[#0B3D2E] flex flex-col animate-modal-enter">
           {/* Felt texture */}
           <div
             className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -613,7 +620,7 @@ export default function GamePlayPage() {
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => setIsInputting(false)}
-                className="text-[#F4D68C]/60 text-sm font-body"
+                className="text-[#F4D68C]/60 text-sm font-body px-2 py-2 -mx-2 -my-2 rounded-lg hover:bg-[#F4D68C]/10 active:bg-[#F4D68C]/20 transition-colors"
               >
                 ← Cancel
               </button>
@@ -622,7 +629,9 @@ export default function GamePlayPage() {
               <div className="flex items-center gap-2">
                 {/* Yaniv caller step dot */}
                 <div
-                  className="w-2 h-2 rounded-full transition-all"
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    inputStep === 'enterScores' ? 'scale-125' : ''
+                  }`}
                   style={{
                     background: inputStep === 'enterScores' ? '#E5B94A' : 'rgba(229, 185, 74, 0.6)',
                   }}
@@ -632,7 +641,9 @@ export default function GamePlayPage() {
                 {playerInputOrder.map((_, index) => (
                   <div
                     key={index}
-                    className="w-2 h-2 rounded-full transition-all"
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      inputStep === 'enterScores' && index === currentPlayerIndex ? 'scale-125' : ''
+                    }`}
                     style={{
                       background: inputStep === 'enterScores' && index <= currentPlayerIndex
                         ? '#E5B94A'
@@ -657,7 +668,7 @@ export default function GamePlayPage() {
                     <button
                       key={player.id}
                       onClick={() => handleSelectYaniv(player.id)}
-                      className="flex flex-col items-center p-4 rounded-xl transition-all active:scale-95"
+                      className="flex flex-col items-center p-4 rounded-xl transition-all active:scale-95 hover:scale-[1.02] hover:border-[#E5B94A]/50"
                       style={{
                         background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
                         border: '2px solid rgba(229, 185, 74, 0.2)',
@@ -726,7 +737,7 @@ export default function GamePlayPage() {
                     <button
                       key={num}
                       onClick={() => handleNumberInput(num.toString())}
-                      className="py-4 rounded-xl text-2xl font-bold text-[#F5F0E1] font-score transition-all active:scale-95"
+                      className="py-4 rounded-xl text-2xl font-bold text-[#F5F0E1] font-score transition-all active:scale-95 active:translate-y-[2px] hover:brightness-110"
                       style={{
                         background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
                         boxShadow: '0 2px 0 #0B3D2E',
@@ -751,7 +762,7 @@ export default function GamePlayPage() {
                   </button>
                   <button
                     onClick={() => handleNumberInput('0')}
-                    className="py-4 rounded-xl text-2xl font-bold text-[#F5F0E1] font-score transition-all active:scale-95"
+                    className="py-4 rounded-xl text-2xl font-bold text-[#F5F0E1] font-score transition-all active:scale-95 active:translate-y-[2px] hover:brightness-110"
                     style={{
                       background: 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
                       boxShadow: '0 2px 0 #0B3D2E',
@@ -761,19 +772,19 @@ export default function GamePlayPage() {
                   </button>
                   <button
                     onClick={handleBackspace}
-                    className="py-4 rounded-xl text-lg font-bold text-[#F4D68C]/60 font-body transition-all active:scale-95"
+                    className="py-4 rounded-xl text-lg font-bold text-[#F4D68C]/60 font-body transition-all active:scale-95 hover:text-[#F4D68C] hover:bg-[#C41E3A]/20"
                     style={{
                       background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
                     }}
                   >
-                    ←
+                    ⌫
                   </button>
                 </div>
 
                 {/* Submit button */}
                 <button
                   onClick={() => handleSubmitPlayerScore()}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] text-[#1A1A1A] tracking-wide font-body"
+                  className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#1A1A1A] tracking-wide font-body"
                   style={{
                     background: 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 50%, #C9972D 100%)',
                     boxShadow: '0 4px 0 #8B6914, 0 6px 12px rgba(0,0,0,0.3)',
