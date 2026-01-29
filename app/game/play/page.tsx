@@ -376,7 +376,7 @@ export default function GamePlayPage() {
           </div>
 
           {/* Rounds grid */}
-          <div className="space-y-1 overflow-y-auto max-h-[50vh]">
+          <div className="space-y-1 overflow-hidden max-h-[50vh] overflow-y-auto">
             {rounds.map((round, roundIndex) => {
               const winnerId = getRoundWinnerId(round);
               const isFalse = hasFalseYaniv(round);
@@ -387,9 +387,9 @@ export default function GamePlayPage() {
                 <div
                   key={round.roundNumber}
                   onClick={() => !isAnimating && handleRoundTap(roundIndex)}
-                  className={`flex items-center transition-all cursor-pointer active:bg-[#E5B94A]/5 ${
-                    isAnimating ? 'bg-[#E5B94A]/10 rounded-lg py-1 -mx-1 px-1' :
-                    showingHands ? 'bg-[#3B82F6]/10 rounded-lg py-1 -mx-1 px-1' : ''
+                  className={`flex items-center transition-all cursor-pointer rounded-lg py-1 hover:bg-[#F4D68C]/10 active:bg-[#E5B94A]/15 ${
+                    isAnimating ? 'bg-[#E5B94A]/10' :
+                    showingHands ? 'bg-[#3B82F6]/15' : ''
                   }`}
                 >
                   <div className={`w-10 flex-shrink-0 text-xs font-body ${showingHands ? 'text-[#3B82F6]' : 'text-[#F4D68C]/50'}`}>
