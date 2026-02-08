@@ -75,6 +75,19 @@ export default function NewGamePage() {
     setDevMode(isDevMode);
   }, [searchParams]);
 
+  // Cap starting round when house rules change
+  useEffect(() => {
+    if (devMode) {
+      const maxStartingRound = houseRules.endGameMode === 'fixedRounds'
+        ? houseRules.maxRounds - 1
+        : 20;
+
+      if (startingRound > maxStartingRound) {
+        setStartingRound(maxStartingRound);
+      }
+    }
+  }, [houseRules.endGameMode, houseRules.maxRounds, devMode, startingRound]);
+
   const toggleRule = (rule: 'falseYaniv' | 'bonus' | 'endGame') => {
     setExpandedRule(expandedRule === rule ? null : rule);
   };
@@ -618,34 +631,45 @@ export default function NewGamePage() {
               </div>
 
               {/* Dev Tools: Start in Round X */}
-              {devMode && (
-                <div className="mb-6 p-5 rounded-xl bg-purple-600/20 border-2 border-purple-400/30">
-                  <label className="block text-purple-200 font-semibold mb-3 text-center text-sm tracking-wide font-body">
-                    🎮 DEV TOOLS: Start in Round
-                  </label>
-                  <div className="flex items-center justify-center gap-4">
-                    <button
-                      onClick={() => setStartingRound(Math.max(1, startingRound - 1))}
-                      disabled={startingRound <= 1}
-                      className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-purple-400"
-                    >
-                      −
-                    </button>
-                    <div className="text-3xl font-bold text-purple-100 w-16 text-center font-display">
-                      {startingRound}
+              {devMode && (() => {
+                // Calculate max starting round based on end game mode
+                const maxStartingRound = houseRules.endGameMode === 'fixedRounds'
+                  ? houseRules.maxRounds - 1  // Can't start AT the final round
+                  : 20;  // Reasonable cap for highScore mode
+
+                return (
+                  <div className="mb-6 p-5 rounded-xl bg-purple-600/20 border-2 border-purple-400/30">
+                    <label className="block text-purple-200 font-semibold mb-3 text-center text-sm tracking-wide font-body">
+                      🎮 DEV TOOLS: Start in Round
+                    </label>
+                    <div className="flex items-center justify-center gap-4">
+                      <button
+                        onClick={() => setStartingRound(Math.max(1, startingRound - 1))}
+                        disabled={startingRound <= 1}
+                        className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-purple-400"
+                      >
+                        −
+                      </button>
+                      <div className="text-3xl font-bold text-purple-100 w-16 text-center font-display">
+                        {startingRound}
+                      </div>
+                      <button
+                        onClick={() => setStartingRound(Math.min(maxStartingRound, startingRound + 1))}
+                        disabled={startingRound >= maxStartingRound}
+                        className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-purple-400"
+                      >
+                        +
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setStartingRound(startingRound + 1)}
-                      className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all focus-visible:ring-2 focus-visible:ring-purple-400"
-                    >
-                      +
-                    </button>
+                    <p className="text-xs text-purple-300/70 text-center mt-3 font-body">
+                      Game will start with mock data up to Round {startingRound}
+                      {houseRules.endGameMode === 'fixedRounds' && (
+                        <span> (max: Round {maxStartingRound})</span>
+                      )}
+                    </p>
                   </div>
-                  <p className="text-xs text-purple-300/70 text-center mt-3 font-body">
-                    Game will start with mock data up to Round {startingRound}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
 
               <button
                 onClick={handleStartGame}
