@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { HouseRules } from '@/types/game';
 import { useGameStore } from '@/lib/store';
+import { getRandomCricketerNames, generateMockPlayerHands } from '@/lib/devtools';
 
 // Avatar colors - rich, saturated palette
 const AVATAR_COLORS = [
@@ -41,8 +42,13 @@ function formatPlayerNames(players: string[]): string {
 
 export default function NewGamePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const createGame = useGameStore(state => state.createGame);
   const [step, setStep] = useState(1);
+
+  // Dev mode state
+  const [devMode, setDevMode] = useState(false);
+  const [startingRound, setStartingRound] = useState(1);
 
   // Step 1: Player count
   const [playerCount, setPlayerCount] = useState(4);
@@ -63,13 +69,25 @@ export default function NewGamePage() {
 
   const [expandedRule, setExpandedRule] = useState<'falseYaniv' | 'bonus' | 'endGame' | null>(null);
 
+  // Check for dev mode on mount
+  useEffect(() => {
+    const isDevMode = searchParams.get('devmode') === 'true';
+    setDevMode(isDevMode);
+  }, [searchParams]);
+
   const toggleRule = (rule: 'falseYaniv' | 'bonus' | 'endGame') => {
     setExpandedRule(expandedRule === rule ? null : rule);
   };
 
   // Handlers
   const handlePlayerCountContinue = () => {
-    setPlayers(Array(playerCount).fill(''));
+    if (devMode) {
+      // Auto-fill with random cricketer names in dev mode
+      const names = getRandomCricketerNames(playerCount);
+      setPlayers(names);
+    } else {
+      setPlayers(Array(playerCount).fill(''));
+    }
     setStep(2);
   };
 
@@ -83,6 +101,21 @@ export default function NewGamePage() {
 
   const handleStartGame = () => {
     createGame(players, houseRules);
+
+    // In dev mode, add mock rounds to start at a later round
+    if (devMode && startingRound > 1) {
+      const addRound = useGameStore.getState().addRound;
+      const currentGame = useGameStore.getState().currentGame;
+
+      if (currentGame) {
+        // Generate and add mock rounds
+        for (let round = 1; round < startingRound; round++) {
+          const { playerHands, yanivCallerId } = generateMockPlayerHands(currentGame.players);
+          addRound(playerHands, yanivCallerId);
+        }
+      }
+    }
+
     router.push('/game/play');
   };
 
@@ -583,6 +616,36 @@ export default function NewGamePage() {
                   </p>
                 </div>
               </div>
+
+              {/* Dev Tools: Start in Round X */}
+              {devMode && (
+                <div className="mb-6 p-5 rounded-xl bg-purple-600/20 border-2 border-purple-400/30">
+                  <label className="block text-purple-200 font-semibold mb-3 text-center text-sm tracking-wide font-body">
+                    🎮 DEV TOOLS: Start in Round
+                  </label>
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      onClick={() => setStartingRound(Math.max(1, startingRound - 1))}
+                      disabled={startingRound <= 1}
+                      className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-purple-400"
+                    >
+                      −
+                    </button>
+                    <div className="text-3xl font-bold text-purple-100 w-16 text-center font-display">
+                      {startingRound}
+                    </div>
+                    <button
+                      onClick={() => setStartingRound(startingRound + 1)}
+                      className="w-12 h-12 rounded-xl bg-purple-600 text-white font-bold text-xl active:scale-95 hover:bg-purple-700 transition-all focus-visible:ring-2 focus-visible:ring-purple-400"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p className="text-xs text-purple-300/70 text-center mt-3 font-body">
+                    Game will start with mock data up to Round {startingRound}
+                  </p>
+                </div>
+              )}
 
               <button
                 onClick={handleStartGame}

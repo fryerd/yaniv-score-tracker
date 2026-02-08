@@ -2,16 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { isDevToolsEnabled } from '@/lib/devtools';
 
 export default function Home() {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [devToolsEnabled, setDevToolsEnabled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     // Check for saved game in localStorage
     const saved = localStorage.getItem('yaniv-current-game');
     setHasSavedGame(!!saved);
+    // Check if dev tools are enabled
+    setDevToolsEnabled(isDevToolsEnabled());
   }, []);
 
   return (
@@ -135,6 +139,26 @@ export default function Home() {
                     No Saved Game
                   </span>
                 </div>
+              )}
+
+              {/* Dev Tools Testing Button */}
+              {devToolsEnabled && (
+                <Link
+                  href="/game/new?devmode=true"
+                  className="group w-full relative py-4 px-8 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#0F5740] active:translate-y-[2px] hover:brightness-110 hover:border-purple-400/40 cursor-pointer block text-center"
+                  style={{
+                    background: 'linear-gradient(to bottom, #7C3AED, #6D28D9)',
+                    border: '2px solid rgba(168, 85, 247, 0.3)',
+                    boxShadow: '0 3px 0 #5B21B6, 0 5px 16px rgba(124, 58, 237, 0.25)'
+                  }}
+                >
+                  <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/12 to-transparent rounded-t-xl pointer-events-none" />
+
+                  <span className="relative text-white font-medium text-base tracking-[0.1em] uppercase font-body flex items-center justify-center gap-2">
+                    <span className="text-lg">🎮</span>
+                    Dev-Tools Testing
+                  </span>
+                </Link>
               )}
 
               {/* Decorative Divider */}
