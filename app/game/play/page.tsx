@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore, getInitials, getFirstName } from '@/lib/store';
+import { generateShareText } from '@/lib/share-utils';
 
 export default function GamePlayPage() {
   const router = useRouter();
@@ -450,29 +451,7 @@ export default function GamePlayPage() {
   // Handle share button
   const handleShare = async () => {
     const sortedPlayers = getSortedPlayers();
-    const medals = ['🥇', '🥈', '🥉'];
-    const lines = sortedPlayers.map((player, index) => {
-      const medal = index < 3 ? medals[index] : '♥️';
-      return `${medal} ${getFirstName(player.name)} - ${player.cumulativeScore}`;
-    });
-
-    // Format date like "Sun 8th Feb 2026"
-    const today = new Date();
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'short' });
-    const day = today.getDate();
-    const month = today.toLocaleDateString('en-US', { month: 'short' });
-    const year = today.getFullYear();
-
-    // Get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
-    const getOrdinal = (n: number) => {
-      const s = ['th', 'st', 'nd', 'rd'];
-      const v = n % 100;
-      return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
-
-    const formattedDate = `${dayName} ${getOrdinal(day)} ${month} ${year}`;
-    const appUrl = 'https://yaniv-score-tracker-ten.vercel.app/';
-    const text = `Yaniv - ${formattedDate}\n\n${lines.join('\n')}\n\n${appUrl}`;
+    const text = generateShareText(sortedPlayers, getFirstName);
 
     // Try Web Share API first (available on mobile browsers)
     if (navigator.share) {

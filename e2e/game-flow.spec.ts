@@ -216,3 +216,76 @@ test.describe('Continue Game', () => {
     await expect(page).toHaveURL('/game/play');
   });
 });
+
+test.describe('Share Results', () => {
+  // Helper to play rounds until game ends
+  async function playUntilGameEnds(page: import('@playwright/test').Page) {
+    await page.goto('/game/new');
+
+    // Setup 2 players with low max score for quick game end
+    await page.click('button:has-text("−")');
+    await page.click('button:has-text("−")');
+    await page.click('text=Continue');
+
+    const inputs = page.locator('input[placeholder^="Player"]');
+    await inputs.nth(0).fill('Alice');
+    await inputs.nth(1).fill('Bob');
+    await page.click('text=Continue');
+
+    // Set max score to 50 for quick game end
+    await page.locator('input[type="number"]').first().fill('50');
+    await page.click('text=Confirm Rules');
+    await page.click('text=Let\'s Play');
+
+    // Play rounds until someone busts
+    // Round 1: Alice calls Yaniv with 3, Bob has 25
+    await page.click('text=Add Round 1 Scores');
+    await page.click('text=Alice');
+    await page.waitForTimeout(300);
+    await page.locator('button', { hasText: /^3$/ }).click();
+    await page.click('text=Next');
+    await page.waitForTimeout(500);
+    await page.locator('button', { hasText: /^2$/ }).click();
+    await page.locator('button', { hasText: /^5$/ }).click();
+    await page.click('text=Done');
+    await page.waitForTimeout(3500);
+
+    // Round 2: Bob calls Yaniv with 4, Alice has 30
+    await page.click('text=Add Round 2 Scores');
+    await page.click('text=Bob');
+    await page.waitForTimeout(300);
+    await page.locator('button', { hasText: /^4$/ }).click();
+    await page.click('text=Next');
+    await page.waitForTimeout(500);
+    await page.locator('button', { hasText: /^3$/ }).click();
+    await page.locator('button', { hasText: /^0$/ }).click();
+    await page.click('text=Done');
+    await page.waitForTimeout(3500);
+
+    // Wait for game to end and show results
+    await page.waitForTimeout(4000);
+  }
+
+  test('shows Share Results button after game ends', async ({ page }) => {
+    await playUntilGameEnds(page);
+
+    // Should eventually show the results screen with Share Results button
+    await expect(page.locator('text=Share Results')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Share Results button is clickable', async ({ page }) => {
+    await playUntilGameEnds(page);
+
+    // Wait for Share Results button
+    const shareButton = page.locator('button:has-text("Share Results")');
+    await expect(shareButton).toBeVisible({ timeout: 10000 });
+
+    // Click it (in E2E tests it will try clipboard, which may fail, but button should be clickable)
+    await shareButton.click();
+
+    // Button should show feedback (either "Copied to clipboard!" or "Could not copy")
+    await expect(
+      page.locator('button:has-text("Copied to clipboard!"), button:has-text("Could not copy")')
+    ).toBeVisible({ timeout: 3000 });
+  });
+});
