@@ -455,8 +455,43 @@ export default function GamePlayPage() {
       const medal = index < 3 ? medals[index] : '♥️';
       return `${medal} ${getFirstName(player.name)} - ${player.cumulativeScore}`;
     });
-    const text = `Yaniv Game Results\n${lines.join('\n')}`;
 
+    // Format date like "Sun 8th Feb 2026"
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'short' });
+    const day = today.getDate();
+    const month = today.toLocaleDateString('en-US', { month: 'short' });
+    const year = today.getFullYear();
+
+    // Get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
+    const getOrdinal = (n: number) => {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    };
+
+    const formattedDate = `${dayName} ${getOrdinal(day)} ${month} ${year}`;
+    const appUrl = 'https://yaniv-score-tracker-ten.vercel.app/';
+    const text = `Yaniv - ${formattedDate}\n\n${lines.join('\n')}\n\n${appUrl}`;
+
+    // Try Web Share API first (available on mobile browsers)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: text,
+        });
+        setShareMessage('Shared!');
+        setTimeout(() => setShareMessage(null), 2000);
+        return;
+      } catch (err) {
+        // User cancelled or share failed - fall through to clipboard
+        if ((err as Error).name === 'AbortError') {
+          return; // User cancelled, don't show error
+        }
+      }
+    }
+
+    // Fallback to clipboard for desktop browsers or if share fails
     try {
       await navigator.clipboard.writeText(text);
       setShareMessage('Copied to clipboard!');
