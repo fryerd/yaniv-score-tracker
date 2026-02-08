@@ -2,7 +2,7 @@
 
 A mobile-friendly web app for tracking scores in the card game **Yaniv**. Built with Next.js, TypeScript, and Tailwind CSS.
 
-**[Try it live](https://yaniv-score-tracker-ten.vercel.app/)**
+**[Try it live](https://yaniv-score-tracker-ten.vercel.app/)** | **[Interactive Scoring Logic Playground](https://fryerd.github.io/yaniv-score-tracker/)**
 
 ## Screenshots
 
@@ -14,6 +14,16 @@ A mobile-friendly web app for tracking scores in the card game **Yaniv**. Built 
 |:------------:|:----------:|
 | <img width="250" alt="Keep score" src="https://github.com/user-attachments/assets/9b8a4d9a-6249-4076-af04-c8909b6600e6" /> | <img width="250" alt="Celebrate your Win" src="https://github.com/user-attachments/assets/645aeb7c-131b-438b-b9a4-cb97ddae5edc" />
 
+## 🎮 Interactive Scoring Logic Playground
+
+Explore how the complex Yaniv scoring logic works with our **[interactive playground](https://fryerd.github.io/yaniv-score-tracker/)**!
+
+- ⚙️ Adjust players, hand scores, and house rules
+- 👁️ See live visualization of scoring calculations
+- 🎯 Try preset scenarios: Normal Win, False Yaniv, 50-Bonus
+- 📋 Generate prompts for implementing the logic
+
+Perfect for understanding how False Yanivs, 50-bonuses, and win streaks work under the hood!
 
 ## Features
 
