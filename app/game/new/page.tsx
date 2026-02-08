@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { HouseRules } from '@/types/game';
 import { useGameStore } from '@/lib/store';
 import { getRandomCricketerNames, generateMockPlayerHands } from '@/lib/devtools';
@@ -42,7 +42,6 @@ function formatPlayerNames(players: string[]): string {
 
 export default function NewGamePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const createGame = useGameStore(state => state.createGame);
   const [step, setStep] = useState(1);
 
@@ -71,14 +70,15 @@ export default function NewGamePage() {
 
   // Check for dev mode on mount
   useEffect(() => {
-    const isDevMode = searchParams.get('devmode') === 'true';
+    const params = new URLSearchParams(window.location.search);
+    const isDevMode = params.get('devmode') === 'true';
     setDevMode(isDevMode);
-  }, [searchParams]);
+  }, []);
 
   // Cap starting round when house rules change
   useEffect(() => {
     if (devMode) {
-      const maxStartingRound = houseRules.endGameMode === 'fixedRounds'
+      const maxStartingRound = houseRules.endGameMode === 'numRounds'
         ? houseRules.maxRounds - 1
         : 20;
 
@@ -633,7 +633,7 @@ export default function NewGamePage() {
               {/* Dev Tools: Start in Round X */}
               {devMode && (() => {
                 // Calculate max starting round based on end game mode
-                const maxStartingRound = houseRules.endGameMode === 'fixedRounds'
+                const maxStartingRound = houseRules.endGameMode === 'numRounds'
                   ? houseRules.maxRounds - 1  // Can't start AT the final round
                   : 20;  // Reasonable cap for highScore mode
 
@@ -663,7 +663,7 @@ export default function NewGamePage() {
                     </div>
                     <p className="text-xs text-purple-300/70 text-center mt-3 font-body">
                       Game will start with mock data up to Round {startingRound}
-                      {houseRules.endGameMode === 'fixedRounds' && (
+                      {houseRules.endGameMode === 'numRounds' && (
                         <span> (max: Round {maxStartingRound})</span>
                       )}
                     </p>
