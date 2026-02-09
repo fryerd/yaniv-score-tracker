@@ -59,8 +59,16 @@ Perfect for understanding how False Yanivs, 50-bonuses, and win streaks work und
 - **Share results** - Copy formatted results to clipboard
 - **Tap any round** to see original hand scores
 
+### Auth & Cloud Save
+- **Magic link authentication** - Sign in with just your email, no password needed
+- **Save finished games** - Tap "Save Game" on the results screen to persist your game to the cloud
+- **Shareable game links** - Saved games get a unique URL (e.g. `/game/view/Ab3kX9mN`) that anyone can view
+- **Claim your player** - After saving, pick which player you were to link it to your account
+- **Zero disruption** - Auth only activates at post-game save; the entire game play loop is unchanged and works offline via localStorage
+
 ### Data & Persistence
-- **Auto-save** - Game state persists in browser localStorage
+- **Auto-save** - Game state persists in browser localStorage during play
+- **Cloud save** - Optionally save finished games to Supabase for permanent storage
 - **Continue game** - Resume your game even after closing the browser
 - **Mobile-first design** - Optimized for use at the card table
 
@@ -70,6 +78,7 @@ Perfect for understanding how False Yanivs, 50-bonuses, and win streaks work und
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS 4
 - **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) with localStorage persistence
+- **Auth & Database:** [Supabase](https://supabase.com/) (magic link auth + Postgres)
 - **Testing:** Jest (unit tests) + Playwright (E2E tests)
 
 ## Getting Started
@@ -138,13 +147,23 @@ yaniv-score-tracker/
 ├── app/                    # Next.js App Router pages
 │   ├── page.tsx           # Home page
 │   ├── layout.tsx         # Root layout
+│   ├── auth/
+│   │   ├── callback/route.ts   # Magic link code exchange
+│   │   └── sign-in/page.tsx    # Sign-in page
 │   └── game/
-│       ├── new/page.tsx   # Game setup wizard
-│       └── play/page.tsx  # Active game screen
+│       ├── new/page.tsx        # Game setup wizard
+│       ├── play/page.tsx       # Active game screen
+│       └── view/[shareToken]/  # Shared game view (read-only)
 ├── lib/
-│   └── store.ts           # Zustand store + scoring logic
+│   ├── store.ts           # Zustand store + scoring logic
+│   ├── actions/           # Server Actions (save game, claim player)
+│   ├── hooks/             # React hooks (useAuth, useSaveGame)
+│   └── supabase/          # Supabase client utilities
 ├── types/
 │   └── game.ts            # TypeScript interfaces
+├── supabase/
+│   └── migrations/        # Database schema (SQL)
+├── middleware.ts           # Auth session refresh
 ├── __tests__/             # Jest unit tests
 ├── e2e/                   # Playwright E2E tests
 └── public/
@@ -181,13 +200,16 @@ npm run test:e2e
 
 ## Deployment
 
-This app is designed to be deployed on [Vercel](https://vercel.com):
+This app is deployed on [Vercel](https://vercel.com) with [Supabase](https://supabase.com/) for auth and database.
 
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Deploy!
+### Setup
 
-The app works entirely client-side with localStorage, so no backend or database setup is required.
+1. **Supabase:** Create a project, run `supabase/migrations/001_initial_schema.sql` in the SQL Editor
+2. **Environment variables:** Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in both `.env.local` and Vercel
+3. **Auth URLs:** In Supabase → Authentication → URL Configuration, set your Site URL and add `https://your-domain/auth/callback` as a redirect URL
+4. **Deploy:** Push to GitHub and Vercel deploys automatically
+
+The game play loop works entirely client-side with localStorage — Supabase is only used for saving finished games and viewing shared links.
 
 ## License
 
