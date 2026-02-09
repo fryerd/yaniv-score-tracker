@@ -3,17 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { GameState } from '@/types/game';
 import { Json } from '@/lib/supabase/types';
-
-// Characters that avoid confusable pairs (0/O, 1/l/I)
-const SHARE_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
-
-function generateShareToken(): string {
-  let token = '';
-  for (let i = 0; i < 8; i++) {
-    token += SHARE_CHARS[Math.floor(Math.random() * SHARE_CHARS.length)];
-  }
-  return token;
-}
+import { generateShareToken } from '@/lib/share-token';
 
 export async function saveGame(gameState: GameState): Promise<{
   success: boolean;
