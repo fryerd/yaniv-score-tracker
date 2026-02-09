@@ -1,14 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore, getInitials, getFirstName } from '@/lib/store';
 import { generateShareText } from '@/lib/share-utils';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { useSaveGame } from '@/lib/hooks/use-save-game';
+import { claimPlayer } from '@/lib/actions/claim-player';
 
 export default function GamePlayPage() {
+  return (
+    <Suspense>
+      <GamePlayContent />
+    </Suspense>
+  );
+}
+
+function GamePlayContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { currentGame, addRound, resetGame } = useGameStore();
+  const { user, isAuthenticated } = useAuth();
+  const { save, status: saveStatus, shareToken, gameId, isSaved, isSaving } = useSaveGame();
 
   // Score input modal state
   const [isInputting, setIsInputting] = useState(false);
@@ -37,6 +51,58 @@ export default function GamePlayPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [previewingHighlightRound, setPreviewingHighlightRound] = useState<number | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+
+  // Save game states
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimingPlayerId, setClaimingPlayerId] = useState<string | null>(null);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'claiming' | 'claimed' | 'error'>('idle');
+
+  // Auto-save on return from auth redirect
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'save' && isAuthenticated && currentGame?.gameEnded && saveStatus === 'idle') {
+      save(currentGame).then((result) => {
+        if (result.success) {
+          setShowClaimModal(true);
+        }
+      });
+      // Clean up URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, isAuthenticated, currentGame, saveStatus, save]);
+
+  // Handle save game button
+  const handleSaveGame = useCallback(async () => {
+    if (!currentGame?.gameEnded) return;
+
+    if (!isAuthenticated) {
+      // Redirect to sign-in, then come back with action=save
+      router.push(`/auth/sign-in?next=${encodeURIComponent('/game/play?action=save')}`);
+      return;
+    }
+
+    const result = await save(currentGame);
+    if (result.success) {
+      setShowClaimModal(true);
+    }
+  }, [currentGame, isAuthenticated, router, save]);
+
+  // Handle claiming a player
+  const handleClaimPlayer = useCallback(async (playerId: string, playerName: string) => {
+    if (!gameId) return;
+    setClaimingPlayerId(playerId);
+    setClaimStatus('claiming');
+
+    const result = await claimPlayer(gameId, playerId, playerName);
+    if (result.success) {
+      setClaimStatus('claimed');
+      setTimeout(() => setShowClaimModal(false), 1000);
+    } else {
+      setClaimStatus('error');
+    }
+  }, [gameId]);
 
   // Redirect if no game - go to homepage, not /game/new
   useEffect(() => {
@@ -451,7 +517,10 @@ export default function GamePlayPage() {
   // Handle share button
   const handleShare = async () => {
     const sortedPlayers = getSortedPlayers();
-    const text = generateShareText(sortedPlayers, getFirstName);
+    const appUrl = shareToken
+      ? `${window.location.origin}/game/view/${shareToken}`
+      : undefined;
+    const text = generateShareText(sortedPlayers, getFirstName, new Date(), appUrl);
 
     // Try Web Share API first (available on mobile browsers)
     if (navigator.share) {
@@ -1268,6 +1337,22 @@ export default function GamePlayPage() {
                     {shareMessage || 'Share Results'}
                   </button>
                   <button
+                    onClick={handleSaveGame}
+                    disabled={isSaving || isSaved}
+                    className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 text-[#1A1A1A] tracking-wide font-body disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{
+                      background: isSaved
+                        ? 'linear-gradient(180deg, #10B981 0%, #059669 100%)'
+                        : 'linear-gradient(180deg, #F4D68C 0%, #E5B94A 50%, #C9972D 100%)',
+                      boxShadow: isSaved
+                        ? '0 4px 0 #047857, 0 6px 12px rgba(0,0,0,0.25)'
+                        : '0 4px 0 #8B6914, 0 6px 12px rgba(0,0,0,0.3)',
+                      color: isSaved ? '#F5F0E1' : '#1A1A1A',
+                    }}
+                  >
+                    {isSaving ? 'Saving...' : isSaved ? 'Saved' : saveStatus === 'error' ? 'Retry Save' : 'Save Game'}
+                  </button>
+                  <button
                     onClick={() => {
                       resetGame();
                       router.push('/game/new');
@@ -1578,6 +1663,79 @@ export default function GamePlayPage() {
                   }}
                 >
                   {currentPlayerIndex < playerInputOrder.length - 1 ? 'Next' : 'Done'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Claim Player Modal */}
+      {showClaimModal && currentGame && (
+        <div className="fixed inset-0 z-[60] bg-[#0B3D2E]/95 flex items-center justify-center animate-modal-enter backdrop-blur-sm p-6">
+          <div
+            className="w-full max-w-sm rounded-2xl p-6 animate-card-enter"
+            style={{
+              background: 'linear-gradient(180deg, #0F5740 0%, #0B3D2E 100%)',
+              border: '2px solid rgba(229, 185, 74, 0.3)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            {claimStatus === 'claimed' ? (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">✓</div>
+                <p className="text-[#10B981] font-body font-semibold">Player claimed!</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-[#F4D68C] text-lg font-display font-bold text-center mb-2">
+                  Which player were you?
+                </h3>
+                <p className="text-[#F5F0E1]/60 text-sm font-body text-center mb-6">
+                  Tap your avatar to claim your spot
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {currentGame.players.map((player) => (
+                    <button
+                      key={player.id}
+                      onClick={() => handleClaimPlayer(player.id, player.name)}
+                      disabled={claimStatus === 'claiming'}
+                      className="flex flex-col items-center p-3 rounded-xl transition-all active:scale-95 hover:scale-[1.02] disabled:opacity-50"
+                      style={{
+                        background: claimingPlayerId === player.id
+                          ? 'linear-gradient(180deg, #10B981 0%, #059669 100%)'
+                          : 'linear-gradient(180deg, #14785A 0%, #0F5740 100%)',
+                        border: '2px solid rgba(229, 185, 74, 0.2)',
+                      }}
+                    >
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base font-body mb-1"
+                        style={{
+                          backgroundColor: player.color,
+                          boxShadow: `0 2px 8px ${player.color}40`,
+                        }}
+                      >
+                        {getInitials(player.name)}
+                      </div>
+                      <span className="text-[#F5F0E1] text-sm font-body">
+                        {getFirstName(player.name)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {claimStatus === 'error' && (
+                  <p className="text-[#C41E3A] text-sm font-body text-center mt-3">
+                    Could not claim player. Try again.
+                  </p>
+                )}
+
+                <button
+                  onClick={() => setShowClaimModal(false)}
+                  className="w-full mt-4 py-2 text-[#F4D68C]/60 text-sm font-body hover:text-[#F4D68C] transition-colors"
+                >
+                  Skip
                 </button>
               </>
             )}
