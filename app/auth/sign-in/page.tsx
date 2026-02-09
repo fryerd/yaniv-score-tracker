@@ -20,6 +20,11 @@ function SignInForm() {
 
     setStatus('loading');
     const supabase = createClient();
+    if (!supabase) {
+      setStatus('error');
+      setErrorMessage('Auth is not configured');
+      return;
+    }
 
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
