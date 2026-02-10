@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yaniv Scoring Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --felt: #0B3D2E;
+    --felt-light: #0F5740;
+    --gold: #E5B94A;
+    --gold-dim: #C9972D;
+    --cream: #F5F0E1;
+    --cream-dim: rgba(245,240,225,0.5);
+    --red: #C41E3A;
+    --green: #10B981;
+    --blue: #3B82F6;
+    --bg: #091a13;
+    --panel: #0d2b1f;
+    --border: rgba(229,185,74,0.15);
+    --border-bright: rgba(229,185,74,0.35);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* Controls panel */
+  .controls {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  .controls h2 {
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .controls h2:not(:first-child) { margin-top: 24px; }
+
+  .control-group {
+    margin-bottom: 14px;
+  }
+  .control-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--cream-dim);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .control-group .value-display {
+    float: right;
+    color: var(--gold);
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--felt);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--felt);
+    color: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus { border-color: var(--gold); }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  .toggle-row label { margin-bottom: 0; }
+  .toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+  }
+  .toggle input { display: none; }
+  .toggle .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--felt);
+    border-radius: 11px;
+    transition: 0.2s;
+    border: 1px solid var(--border);
+  }
+  .toggle .slider::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--cream-dim);
+    top: 2px;
+    left: 3px;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .slider { background: var(--green); border-color: var(--green); }
+  .toggle input:checked + .slider::after { transform: translateX(17px); background: white; }
+
+  /* Presets */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .preset-btn {
+    padding: 6px 12px;
+    background: var(--felt);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--cream-dim);
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.15s;
+    font-weight: 500;
+  }
+  .preset-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .preset-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 700; }
+
+  /* Player hand inputs */
+  .player-hand {
+    display: grid;
+    grid-template-columns: 24px 1fr 80px 50px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  .player-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: white;
+  }
+  .player-hand .name {
+    font-size: 13px;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-hand .hand-val {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    text-align: right;
+    font-weight: 600;
+  }
+  .yaniv-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--cream-dim);
+    cursor: pointer;
+    transition: 0.15s;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .yaniv-btn:hover { border-color: var(--gold); }
+  .yaniv-btn.active {
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold);
+  }
+
+  /* Preview panel */
+  .preview-area {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .preview-title {
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .preview-subtitle {
+    color: var(--cream-dim);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  /* Scoreboard */
+  .scoreboard {
+    background: var(--felt);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .scoreboard-header {
+    display: grid;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cream-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+  }
+  .scoreboard-row {
+    display: grid;
+    padding: 14px 16px;
+    align-items: center;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(229,185,74,0.06);
+    transition: 0.2s;
+  }
+  .scoreboard-row:last-child { border-bottom: none; }
+  .scoreboard-header, .scoreboard-row {
+    grid-template-columns: 30px 1fr 80px 100px 80px 80px;
+    gap: 8px;
+  }
+  .score-before {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--cream-dim);
+    text-align: right;
+  }
+  .score-change {
+    text-align: center;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .score-change.positive { color: var(--red); background: rgba(196,30,58,0.12); }
+  .score-change.zero { color: var(--green); background: rgba(16,185,129,0.12); }
+  .score-change.negative { color: var(--blue); background: rgba(59,130,246,0.12); }
+  .score-after {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--cream);
+    font-weight: 700;
+    text-align: right;
+  }
+  .score-reason {
+    font-size: 11px;
+    color: var(--cream-dim);
+    text-align: right;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .badge-yaniv { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-false { background: rgba(196,30,58,0.15); color: var(--red); }
+  .badge-bonus { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-streak { background: rgba(168,85,247,0.15); color: #A855F7; }
+  .badge-winner { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-out { background: rgba(196,30,58,0.15); color: var(--red); }
+
+  .player-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .player-name-cell .name { overflow: hidden; text-overflow: ellipsis; }
+
+  /* Event callouts */
+  .event-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .event-callout .icon { font-size: 20px; flex-shrink: 0; }
+  .event-callout.info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); }
+  .event-callout.success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
+  .event-callout.danger { background: rgba(196,30,58,0.08); border: 1px solid rgba(196,30,58,0.2); }
+  .event-callout.special { background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2); }
+
+  /* Rules summary */
+  .rules-summary {
+    background: var(--felt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .rules-summary h3 {
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--cream-dim);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .rule-item .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* Prompt output */
+  .prompt-area {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: auto;
+  }
+  .prompt-area h3 {
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .prompt-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--cream-dim);
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 12px;
+  }
+  .copy-btn {
+    padding: 8px 16px;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .copy-btn:hover { filter: brightness(1.1); }
+  .copy-btn.copied { background: var(--green); color: white; }
+
+  /* Cumulative score inputs */
+  .cum-score-input {
+    width: 54px;
+    padding: 4px 6px;
+    background: var(--felt);
+    color: var(--gold);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    text-align: right;
+    outline: none;
+  }
+  .cum-score-input:focus { border-color: var(--gold); }
+
+  .hand-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hand-slider-container input[type="range"] {
+    flex: 1;
+  }
+
+  /* Score bar visualization */
+  .score-bar-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .score-bar-container h3 {
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .score-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .score-bar-name {
+    width: 70px;
+    font-size: 12px;
+    color: var(--cream);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .score-bar-track {
+    flex: 1;
+    height: 24px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.4s ease;
+    position: relative;
+    min-width: 2px;
+  }
+  .score-bar-fill .before-segment {
+    height: 100%;
+    border-radius: 6px 0 0 6px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0.5;
+  }
+  .score-bar-fill .change-segment {
+    height: 100%;
+    position: absolute;
+    top: 0;
+  }
+  .score-bar-value {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--cream-dim);
+    width: 36px;
+  }
+  .score-bar-limit {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: var(--red);
+    opacity: 0.5;
+  }
+  .score-bar-limit-label {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 9px;
+    color: var(--red);
+    opacity: 0.7;
+  }
+
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- Controls -->
+  <div class="controls">
+    <h2>Scenario Presets</h2>
+    <div class="presets" id="presets"></div>
+
+    <h2>House Rules</h2>
+
+    <div class="control-group">
+      <label>False Yaniv Penalty <span class="value-display" id="penalty-val">30</span></label>
+      <input type="range" id="penalty" min="15" max="50" step="5" value="30">
+    </div>
+
+    <div class="toggle-row">
+      <label>Bystanders score on False Yaniv</label>
+      <label class="toggle">
+        <input type="checkbox" id="bystanders">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="control-group" style="margin-top:10px">
+      <label>Bonus at multiples of 50</label>
+      <select id="bonusType">
+        <option value="subtract25">Subtract 25</option>
+        <option value="divide2">Divide by 2</option>
+        <option value="none">No bonus</option>
+      </select>
+    </div>
+
+    <div class="toggle-row">
+      <label>3-win streak bonus (-25)</label>
+      <label class="toggle">
+        <input type="checkbox" id="winStreak">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="control-group" style="margin-top:10px">
+      <label>End game mode</label>
+      <select id="endGameMode">
+        <option value="highScore">Someone exceeds max score</option>
+        <option value="numRounds">Fixed number of rounds</option>
+      </select>
+    </div>
+
+    <div class="control-group" id="maxScore-group">
+      <label>Max score <span class="value-display" id="maxScore-val">150</span></label>
+      <input type="range" id="maxScore" min="50" max="300" step="10" value="150">
+    </div>
+
+    <div class="control-group" id="maxRounds-group" style="display:none">
+      <label>Max rounds <span class="value-display" id="maxRounds-val">10</span></label>
+      <input type="range" id="maxRounds" min="3" max="30" step="1" value="10">
+    </div>
+
+    <h2>Round Setup</h2>
+    <div class="control-group">
+      <label>Number of players</label>
+      <select id="playerCount">
+        <option value="2">2 Players</option>
+        <option value="3" selected>3 Players</option>
+        <option value="4">4 Players</option>
+        <option value="5">5 Players</option>
+        <option value="6">6 Players</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Consecutive prior Yaniv wins by caller <span class="value-display" id="streak-val">0</span></label>
+      <input type="range" id="streakCount" min="0" max="5" step="1" value="0">
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div style="display:grid; grid-template-columns: 30px 1fr 70px 52px; gap:6px; margin-bottom:8px; padding:0 0 4px;">
+      <span style="font-size:10px;color:var(--cream-dim)"></span>
+      <span style="font-size:10px;color:var(--cream-dim)">Player</span>
+      <span style="font-size:10px;color:var(--cream-dim);text-align:center">Hand</span>
+      <span style="font-size:10px;color:var(--cream-dim);text-align:right">Score</span>
+    </div>
+    <div id="player-inputs"></div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-area">
+    <div class="preview-title">Yaniv Scoring System</div>
+    <div class="preview-subtitle">Configure a scenario on the left, see how scoring works on the right</div>
+
+    <div id="events"></div>
+
+    <div class="scoreboard" id="scoreboard">
+      <div class="scoreboard-header">
+        <span></span>
+        <span>Player</span>
+        <span style="text-align:right">Before</span>
+        <span style="text-align:center">Change</span>
+        <span style="text-align:right">After</span>
+        <span style="text-align:right">Why</span>
+      </div>
+      <div id="scoreboard-body"></div>
+    </div>
+
+    <div class="score-bar-container" id="score-bars-container">
+      <h3>Score Progress</h3>
+      <div id="score-bars"></div>
+    </div>
+
+    <div class="rules-summary" id="rules-summary"></div>
+
+    <div class="prompt-area">
+      <h3>Prompt Output</h3>
+      <div class="prompt-text" id="prompt-output"></div>
+      <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PLAYERS = [
+  { name: 'Alice', color: '#3B82F6' },
+  { name: 'Bob', color: '#14B8A6' },
+  { name: 'Charlie', color: '#A855F7' },
+  { name: 'Diana', color: '#EC4899' },
+  { name: 'Ethan', color: '#F59E0B' },
+  { name: 'Fiona', color: '#10B981' },
+];
+
+const DEFAULTS = {
+  penalty: 30,
+  bystanders: false,
+  bonusType: 'subtract25',
+  winStreak: false,
+  endGameMode: 'highScore',
+  maxScore: 150,
+  maxRounds: 10,
+  playerCount: 3,
+  streakCount: 0,
+};
+
+const PRESETS = [
+  {
+    label: 'Normal Yaniv',
+    desc: 'Caller wins with lowest hand',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'subtract25', winStreak: false, endGameMode: 'highScore', maxScore: 150, streakCount: 0 },
+    hands: [2, 18, 25],
+    scores: [40, 35, 62],
+    caller: 0,
+  },
+  {
+    label: 'False Yaniv',
+    desc: 'Someone has equal or lower hand',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'subtract25', winStreak: false, endGameMode: 'highScore', maxScore: 150, streakCount: 0 },
+    hands: [7, 5, 22],
+    scores: [40, 35, 62],
+    caller: 0,
+  },
+  {
+    label: 'Bonus at 50',
+    desc: 'Player lands exactly on 50',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'subtract25', winStreak: false, endGameMode: 'highScore', maxScore: 150, streakCount: 0 },
+    hands: [3, 15, 20],
+    scores: [10, 35, 30],
+    caller: 0,
+  },
+  {
+    label: 'Divide by 2',
+    desc: 'Bonus halves score at 100',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'divide2', winStreak: false, endGameMode: 'highScore', maxScore: 150, streakCount: 0 },
+    hands: [2, 20, 18],
+    scores: [10, 80, 82],
+    caller: 0,
+  },
+  {
+    label: 'Win Streak',
+    desc: '3rd consecutive win = -25 bonus',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'subtract25', winStreak: true, endGameMode: 'highScore', maxScore: 150, streakCount: 2 },
+    hands: [3, 22, 18],
+    scores: [20, 80, 55],
+    caller: 0,
+  },
+  {
+    label: 'Game Over',
+    desc: 'Someone busts past max score',
+    state: { playerCount: 3, penalty: 30, bystanders: false, bonusType: 'subtract25', winStreak: false, endGameMode: 'highScore', maxScore: 150, streakCount: 0 },
+    hands: [4, 15, 30],
+    scores: [45, 110, 125],
+    caller: 0,
+  },
+];
+
+let state = { ...DEFAULTS };
+let playerHands = [2, 18, 25];
+let playerScores = [40, 35, 62];
+let yanivCallerIdx = 0;
+let activePreset = -1;
+
+// DOM refs
+const els = {};
+['penalty','bystanders','bonusType','winStreak','endGameMode','maxScore','maxRounds','playerCount','streakCount'].forEach(id => {
+  els[id] = document.getElementById(id);
+});
+
+function init() {
+  renderPresets();
+  bindControls();
+  renderPlayerInputs();
+  updateAll();
+}
+
+function renderPresets() {
+  const container = document.getElementById('presets');
+  container.innerHTML = PRESETS.map((p, i) =>
+    `<button class="preset-btn" data-idx="${i}" title="${p.desc}">${p.label}</button>`
+  ).join('');
+  container.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => applyPreset(parseInt(btn.dataset.idx)));
+  });
+}
+
+function applyPreset(idx) {
+  const p = PRESETS[idx];
+  activePreset = idx;
+  Object.assign(state, p.state);
+
+  // Sync controls
+  els.penalty.value = state.penalty;
+  els.bystanders.checked = state.bystanders;
+  els.bonusType.value = state.bonusType;
+  els.winStreak.checked = state.winStreak;
+  els.endGameMode.value = state.endGameMode;
+  els.maxScore.value = state.maxScore;
+  els.maxRounds.value = state.maxRounds;
+  els.playerCount.value = state.playerCount;
+  els.streakCount.value = state.streakCount;
+
+  playerHands = [...p.hands];
+  playerScores = [...p.scores];
+  yanivCallerIdx = p.caller;
+
+  renderPlayerInputs();
+  updateAll();
+}
+
+function bindControls() {
+  els.penalty.addEventListener('input', e => { state.penalty = +e.target.value; activePreset = -1; updateAll(); });
+  els.bystanders.addEventListener('change', e => { state.bystanders = e.target.checked; activePreset = -1; updateAll(); });
+  els.bonusType.addEventListener('change', e => { state.bonusType = e.target.value; activePreset = -1; updateAll(); });
+  els.winStreak.addEventListener('change', e => { state.winStreak = e.target.checked; activePreset = -1; updateAll(); });
+  els.endGameMode.addEventListener('change', e => {
+    state.endGameMode = e.target.value;
+    document.getElementById('maxScore-group').style.display = e.target.value === 'highScore' ? '' : 'none';
+    document.getElementById('maxRounds-group').style.display = e.target.value === 'numRounds' ? '' : 'none';
+    activePreset = -1;
+    updateAll();
+  });
+  els.maxScore.addEventListener('input', e => { state.maxScore = +e.target.value; activePreset = -1; updateAll(); });
+  els.maxRounds.addEventListener('input', e => { state.maxRounds = +e.target.value; activePreset = -1; updateAll(); });
+  els.playerCount.addEventListener('change', e => {
+    state.playerCount = +e.target.value;
+    // Resize arrays
+    while (playerHands.length < state.playerCount) { playerHands.push(15); playerScores.push(0); }
+    playerHands.length = state.playerCount;
+    playerScores.length = state.playerCount;
+    if (yanivCallerIdx >= state.playerCount) yanivCallerIdx = 0;
+    activePreset = -1;
+    renderPlayerInputs();
+    updateAll();
+  });
+  els.streakCount.addEventListener('input', e => { state.streakCount = +e.target.value; activePreset = -1; updateAll(); });
+}
+
+function renderPlayerInputs() {
+  const container = document.getElementById('player-inputs');
+  let html = '';
+  for (let i = 0; i < state.playerCount; i++) {
+    const p = PLAYERS[i];
+    const initial = p.name[0];
+    const isYaniv = i === yanivCallerIdx;
+    html += `
+      <div style="display:grid; grid-template-columns: 30px 1fr 70px 52px; gap:6px; align-items:center; margin-bottom:8px;">
+        <div class="player-dot" style="background:${p.color}">${initial}</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:13px;color:var(--cream);flex:1">${p.name}</span>
+          <button class="yaniv-btn ${isYaniv ? 'active' : ''}" data-idx="${i}" onclick="setYanivCaller(${i})">${isYaniv ? 'YANIV!' : 'Call'}</button>
+        </div>
+        <div class="hand-slider-container">
+          <input type="range" min="0" max="50" value="${playerHands[i]}" style="width:42px" data-hand="${i}"
+            oninput="setHand(${i}, +this.value)">
+          <span style="font-family:monospace;font-size:12px;color:var(--gold);width:22px;text-align:right">${playerHands[i]}</span>
+        </div>
+        <input type="number" class="cum-score-input" value="${playerScores[i]}" min="0" max="300"
+          onchange="setScore(${i}, +this.value)">
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+function setYanivCaller(idx) {
+  yanivCallerIdx = idx;
+  activePreset = -1;
+  renderPlayerInputs();
+  updateAll();
+}
+
+function setHand(idx, val) {
+  playerHands[idx] = val;
+  activePreset = -1;
+  renderPlayerInputs();
+  updateAll();
+}
+
+function setScore(idx, val) {
+  playerScores[idx] = val;
+  activePreset = -1;
+  updateAll();
+}
+
+function simulateRound() {
+  const callerHand = playerHands[yanivCallerIdx];
+
+  // Detect False Yaniv
+  const equalOrLower = [];
+  for (let i = 0; i < state.playerCount; i++) {
+    if (i !== yanivCallerIdx && playerHands[i] <= callerHand) {
+      equalOrLower.push(i);
+    }
+  }
+  const isFalseYaniv = equalOrLower.length > 0;
+
+  // Check win streak
+  const hasWinStreak = state.winStreak && !isFalseYaniv && state.streakCount >= 2;
+
+  // Calculate scores
+  const results = [];
+  for (let i = 0; i < state.playerCount; i++) {
+    const oldScore = playerScores[i];
+    let pointsAdded = 0;
+    let reason = '';
+
+    if (isFalseYaniv) {
+      if (i === yanivCallerIdx) {
+        pointsAdded = state.penalty;
+        reason = 'false-yaniv-penalty';
+      } else if (equalOrLower.includes(i)) {
+        pointsAdded = 0;
+        reason = 'false-yaniv-winner';
+      } else {
+        pointsAdded = state.bystanders ? playerHands[i] : 0;
+        reason = 'bystander';
+      }
+    } else {
+      if (i === yanivCallerIdx) {
+        pointsAdded = 0;
+        reason = 'yaniv-winner';
+      } else {
+        pointsAdded = playerHands[i];
+        reason = 'hand-total';
+      }
+    }
+
+    let newScore = oldScore + pointsAdded;
+    let bonusApplied = false;
+    let bonusAmount = 0;
+    let streakBonusApplied = false;
+
+    // Check multiple-of-50 bonus
+    if (newScore > 0 && newScore % 50 === 0 && state.bonusType !== 'none') {
+      bonusApplied = true;
+      if (state.bonusType === 'subtract25') {
+        bonusAmount = -25;
+        newScore -= 25;
+      } else if (state.bonusType === 'divide2') {
+        bonusAmount = -(newScore / 2);
+        newScore = newScore / 2;
+      }
+    }
+
+    // Win streak bonus
+    if (i === yanivCallerIdx && hasWinStreak) {
+      streakBonusApplied = true;
+      newScore -= 25;
+    }
+
+    results.push({
+      idx: i,
+      name: PLAYERS[i].name,
+      color: PLAYERS[i].color,
+      oldScore,
+      pointsAdded,
+      bonusApplied,
+      bonusAmount,
+      streakBonusApplied,
+      newScore,
+      reason,
+    });
+  }
+
+  // Check game over
+  let gameOver = false;
+  let winnerId = -1;
+  if (state.endGameMode === 'highScore') {
+    const busted = results.find(r => r.newScore > state.maxScore);
+    if (busted) {
+      gameOver = true;
+      winnerId = results.reduce((min, r) => r.newScore < results[min].newScore ? r.idx : min, 0);
+    }
+  }
+
+  return { results, isFalseYaniv, equalOrLower, hasWinStreak, gameOver, winnerId };
+}
+
+function updateAll() {
+  // Update value displays
+  document.getElementById('penalty-val').textContent = state.penalty;
+  document.getElementById('maxScore-val').textContent = state.maxScore;
+  document.getElementById('maxRounds-val').textContent = state.maxRounds;
+  document.getElementById('streak-val').textContent = state.streakCount;
+
+  // Update preset highlights
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === activePreset);
+  });
+
+  const sim = simulateRound();
+  renderEvents(sim);
+  renderScoreboard(sim);
+  renderScoreBars(sim);
+  renderRulesSummary();
+  updatePrompt(sim);
+}
+
+function reasonLabel(reason, bonusApplied, bonusAmount, streakBonusApplied) {
+  const parts = [];
+  const labels = {
+    'yaniv-winner': 'Yaniv!',
+    'hand-total': 'Hand',
+    'false-yaniv-penalty': 'Penalty',
+    'false-yaniv-winner': 'Counter!',
+    'bystander': 'Bystander',
+  };
+  parts.push(labels[reason] || reason);
+  if (bonusApplied) {
+    const bonusLabel = bonusAmount === -25 ? '-25' : '\u00f72';
+    parts.push(`<span class="badge badge-bonus">${bonusLabel} bonus</span>`);
+  }
+  if (streakBonusApplied) {
+    parts.push(`<span class="badge badge-streak">streak -25</span>`);
+  }
+  return parts.join(' ');
+}
+
+function renderEvents(sim) {
+  const container = document.getElementById('events');
+  let html = '';
+  const caller = PLAYERS[yanivCallerIdx].name;
+
+  if (sim.isFalseYaniv) {
+    const winners = sim.equalOrLower.map(i => PLAYERS[i].name).join(' & ');
+    html += `<div class="event-callout danger">
+      <span class="icon">🚫</span>
+      <div><strong>False Yaniv!</strong> ${caller} called Yaniv with ${playerHands[yanivCallerIdx]} but ${winners} had equal or lower. ${caller} gets +${state.penalty} penalty${state.bystanders ? ', other players add their hand totals.' : ', other players score 0.'}</div>
+    </div>`;
+  } else {
+    html += `<div class="event-callout success">
+      <span class="icon">✅</span>
+      <div><strong>Yaniv!</strong> ${caller} called with ${playerHands[yanivCallerIdx]} \u2014 lowest hand. Everyone else adds their hand total to their score.</div>
+    </div>`;
+  }
+
+  // Bonus events
+  sim.results.forEach(r => {
+    if (r.bonusApplied) {
+      const before = r.oldScore + r.pointsAdded;
+      if (state.bonusType === 'subtract25') {
+        html += `<div class="event-callout info">
+          <span class="icon">🎰</span>
+          <div><strong>Bonus!</strong> ${r.name} landed on exactly ${before} (multiple of 50). Score reduced by 25 \u2192 ${r.newScore + (r.streakBonusApplied ? 25 : 0)}.</div>
+        </div>`;
+      } else {
+        html += `<div class="event-callout info">
+          <span class="icon">🎰</span>
+          <div><strong>Bonus!</strong> ${r.name} landed on exactly ${before} (multiple of 50). Score halved \u2192 ${r.newScore + (r.streakBonusApplied ? 25 : 0)}.</div>
+        </div>`;
+      }
+    }
+  });
+
+  if (sim.hasWinStreak) {
+    html += `<div class="event-callout special">
+      <span class="icon">🔥</span>
+      <div><strong>Win Streak!</strong> ${caller} won 3+ consecutive rounds. -25 bonus applied.</div>
+    </div>`;
+  }
+
+  if (sim.gameOver) {
+    const busted = sim.results.find(r => r.newScore > state.maxScore);
+    const winner = PLAYERS[sim.winnerId].name;
+    html += `<div class="event-callout danger">
+      <span class="icon">🏁</span>
+      <div><strong>Game Over!</strong> ${busted.name} exceeded ${state.maxScore} points. ${winner} wins with ${sim.results[sim.winnerId].newScore} points!</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderScoreboard(sim) {
+  const body = document.getElementById('scoreboard-body');
+  let html = '';
+  sim.results.forEach(r => {
+    const changeSign = r.newScore - r.oldScore;
+    const totalChange = r.newScore - r.oldScore;
+    let changeClass = 'zero';
+    let changeStr = '0';
+    if (totalChange > 0) { changeClass = 'positive'; changeStr = '+' + totalChange; }
+    else if (totalChange < 0) { changeClass = 'negative'; changeStr = totalChange.toString(); }
+
+    let badges = '';
+    if (r.reason === 'yaniv-winner') badges += ' <span class="badge badge-yaniv">YANIV</span>';
+    if (r.reason === 'false-yaniv-penalty') badges += ' <span class="badge badge-false">FALSE</span>';
+    if (r.reason === 'false-yaniv-winner') badges += ' <span class="badge badge-winner">COUNTER</span>';
+    if (sim.gameOver && r.newScore > state.maxScore) badges += ' <span class="badge badge-out">OUT</span>';
+    if (sim.gameOver && r.idx === sim.winnerId) badges += ' <span class="badge badge-winner">WINNER</span>';
+
+    html += `<div class="scoreboard-row">
+      <div class="player-dot" style="background:${r.color}">${r.name[0]}</div>
+      <div class="player-name-cell"><span class="name">${r.name}</span>${badges}</div>
+      <div class="score-before">${r.oldScore}</div>
+      <div class="score-change ${changeClass}">${changeStr}</div>
+      <div class="score-after">${r.newScore}</div>
+      <div class="score-reason">${reasonLabel(r.reason, r.bonusApplied, r.bonusAmount, r.streakBonusApplied)}</div>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+function renderScoreBars(sim) {
+  const container = document.getElementById('score-bars');
+  const limit = state.endGameMode === 'highScore' ? state.maxScore : 200;
+  const maxVal = Math.max(limit, ...sim.results.map(r => r.newScore)) + 10;
+
+  let html = '';
+  sim.results.forEach(r => {
+    const beforePct = (r.oldScore / maxVal * 100);
+    const afterPct = (r.newScore / maxVal * 100);
+    const limitPct = (limit / maxVal * 100);
+
+    const changePct = Math.abs(afterPct - beforePct);
+    const isNeg = r.newScore < r.oldScore;
+
+    let barColor = r.color;
+    let changeColor = r.newScore > r.oldScore ? 'rgba(196,30,58,0.6)' : 'rgba(59,130,246,0.6)';
+
+    html += `<div class="score-bar-row">
+      <div class="score-bar-name">${r.name}</div>
+      <div class="score-bar-track">
+        ${state.endGameMode === 'highScore' ? `
+          <div class="score-bar-limit" style="left:${limitPct}%"></div>
+          <div class="score-bar-limit-label" style="left:calc(${limitPct}% + 4px)">${limit}</div>
+        ` : ''}
+        <div class="score-bar-fill" style="width:${Math.max(beforePct, afterPct)}%; background:transparent;">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${(Math.min(beforePct, afterPct) / Math.max(beforePct, afterPct, 0.01)) * 100}%;background:${r.color};opacity:0.4;border-radius:6px 0 0 6px;"></div>
+          <div style="position:absolute;top:0;height:100%;left:${isNeg ? afterPct / Math.max(afterPct, beforePct, 0.01) * 100 : (beforePct / Math.max(afterPct, beforePct, 0.01)) * 100}%;width:${changePct / Math.max(beforePct, afterPct, 0.01) * 100}%;background:${r.newScore >= r.oldScore ? r.color : changeColor};opacity:${r.newScore >= r.oldScore ? 0.8 : 0.7};border-radius:${isNeg ? '6px' : '0 6px 6px 0'};"></div>
+        </div>
+      </div>
+      <div class="score-bar-value">${r.newScore}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderRulesSummary() {
+  const container = document.getElementById('rules-summary');
+  const rules = [];
+  rules.push(`The game uses <strong>low score wins</strong> \u2014 Yaniv caller gets 0, everyone else adds their hand total.`);
+  rules.push(`If someone has equal or lower cards when Yaniv is called, it's a <strong>False Yaniv</strong> \u2014 the caller gets <strong>+${state.penalty}</strong> penalty.`);
+  if (state.bystanders) {
+    rules.push(`On False Yaniv, <strong>bystanders still add</strong> their hand totals.`);
+  } else {
+    rules.push(`On False Yaniv, <strong>only the caller</strong> gets penalized \u2014 bystanders score 0.`);
+  }
+  if (state.bonusType === 'subtract25') {
+    rules.push(`Landing exactly on a <strong>multiple of 50</strong> triggers a <strong>-25 bonus</strong>.`);
+  } else if (state.bonusType === 'divide2') {
+    rules.push(`Landing exactly on a <strong>multiple of 50</strong> triggers a <strong>divide by 2 bonus</strong>.`);
+  } else {
+    rules.push(`No bonus for landing on multiples of 50.`);
+  }
+  if (state.winStreak) {
+    rules.push(`Winning <strong>3+ consecutive rounds</strong> as Yaniv caller gives a <strong>-25 streak bonus</strong>.`);
+  }
+  if (state.endGameMode === 'highScore') {
+    rules.push(`Game ends when someone exceeds <strong>${state.maxScore} points</strong>. Lowest score wins.`);
+  } else {
+    rules.push(`Game ends after <strong>${state.maxRounds} rounds</strong>. Lowest score wins.`);
+  }
+
+  container.innerHTML = `<h3>Active Rules</h3>` + rules.map(r => `<div class="rule-item"><div class="dot"></div><div>${r}</div></div>`).join('');
+}
+
+function updatePrompt(sim) {
+  const parts = [];
+  parts.push(`Yaniv scoring rules for this game:`);
+  parts.push(``);
+  parts.push(`- Yaniv caller scores 0, others add hand total`);
+  parts.push(`- False Yaniv penalty: +${state.penalty}`);
+  parts.push(`- Bystanders on False Yaniv: ${state.bystanders ? 'add hand totals' : 'score 0'}`);
+
+  if (state.bonusType !== 'none') {
+    const bonusDesc = state.bonusType === 'subtract25' ? 'subtract 25' : 'divide by 2';
+    parts.push(`- Bonus at multiples of 50: ${bonusDesc}`);
+  }
+  if (state.winStreak) {
+    parts.push(`- 3-win streak bonus: -25`);
+  }
+  if (state.endGameMode === 'highScore') {
+    parts.push(`- Game ends when someone exceeds ${state.maxScore}`);
+  } else {
+    parts.push(`- Game ends after ${state.maxRounds} rounds`);
+  }
+
+  parts.push(``);
+  parts.push(`Example round:`);
+  sim.results.forEach(r => {
+    const change = r.newScore - r.oldScore;
+    const sign = change >= 0 ? '+' : '';
+    let note = '';
+    if (r.reason === 'yaniv-winner') note = ' (called Yaniv)';
+    if (r.reason === 'false-yaniv-penalty') note = ' (False Yaniv penalty)';
+    if (r.reason === 'false-yaniv-winner') note = ' (countered)';
+    if (r.bonusApplied) note += ` (bonus: ${r.bonusAmount})`;
+    if (r.streakBonusApplied) note += ' (streak: -25)';
+    parts.push(`  ${r.name}: ${r.oldScore} ${sign}${change} = ${r.newScore}${note}`);
+  });
+
+  document.getElementById('prompt-output').textContent = parts.join('\n');
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
