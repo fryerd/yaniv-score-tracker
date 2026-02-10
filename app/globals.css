@@ -210,7 +210,7 @@ body {
 }
 
 .animate-card-enter {
-  animation: card-enter 0.4s ease-out forwards;
+  animation: card-enter 0.4s ease-out both;
 }
 
 .animate-shake {

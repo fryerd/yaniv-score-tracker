@@ -35,7 +35,7 @@ function GamePlayContent() {
 
   // Animation states
   const [showRawScores, setShowRawScores] = useState(false);
-  const [slideDirection, setSlideDirection] = useState<'enter' | 'exit' | null>(null);
+  const [slideDirection, setSlideDirection] = useState<'enter' | 'enter-start' | 'exit' | null>(null);
   const [animatingRoundIndex, setAnimatingRoundIndex] = useState<number | null>(null);
   const [animatedScores, setAnimatedScores] = useState<{ [playerId: string]: number }>({});
   const [animatedTotals, setAnimatedTotals] = useState<{ [playerId: string]: number }>({});
@@ -213,7 +213,12 @@ function GamePlayContent() {
         setCurrentPlayerIndex(currentPlayerIndex + 1);
         setInputValue('');
         setIsNegative(false);
-        setSlideDirection('enter');
+        setSlideDirection('enter-start');  // Position right, no transition
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setSlideDirection('enter');    // Animate to center
+          });
+        });
       }, 400);
     } else {
       // All scores entered, show raw scores briefly then close
@@ -558,7 +563,7 @@ function GamePlayContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B3D2E] relative overflow-hidden">
+    <div className="min-h-dvh bg-[#0B3D2E] relative overflow-hidden">
       {/* Felt texture */}
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -567,7 +572,7 @@ function GamePlayContent() {
         }}
       />
 
-      <div className="relative z-10 min-h-screen flex flex-col p-4 max-w-lg mx-auto">
+      <div className="relative z-10 min-h-dvh flex flex-col p-4 max-w-lg mx-auto">
         {/* Header */}
         <header className="flex items-center justify-between mb-6">
           <Link
@@ -1322,7 +1327,7 @@ function GamePlayContent() {
                 <div
                   className="absolute bottom-0 left-0 right-0 pt-4 pb-4 space-y-3 animate-results-reveal"
                   style={{
-                    animationDelay: '0.5s',
+                    animationDelay: '0.3s',
                     background: 'linear-gradient(to top, #0B3D2E 70%, transparent 100%)',
                   }}
                 >
@@ -1570,14 +1575,18 @@ function GamePlayContent() {
               <>
                 {/* Player info with animation */}
                 <div
-                  className={`flex-1 flex flex-col items-center justify-center transition-all duration-400 ease-out ${
-                    slideDirection === 'exit' ? 'opacity-0 -translate-x-12' :
-                    slideDirection === 'enter' ? 'opacity-100 translate-x-0' : 'opacity-100'
+                  className={`flex-1 flex flex-col items-center justify-center ease-out ${
+                    slideDirection === 'enter-start' ? '' : 'transition-all'
+                  } ${
+                    slideDirection === 'exit' ? 'opacity-0' :
+                    slideDirection === 'enter-start' ? 'opacity-0' :
+                    slideDirection === 'enter' ? 'opacity-100' : 'opacity-100'
                   }`}
                   style={{
-                    transitionDuration: '400ms',
-                    transform: slideDirection === 'enter' ? 'translateX(0)' :
-                               slideDirection === 'exit' ? 'translateX(-3rem)' : 'none',
+                    transitionDuration: slideDirection === 'enter-start' ? '0ms' : '400ms',
+                    transform: slideDirection === 'exit' ? 'translateX(-3rem)' :
+                               slideDirection === 'enter-start' ? 'translateX(3rem)' :
+                               slideDirection === 'enter' ? 'translateX(0)' : 'none',
                   }}
                 >
                   <p className="text-[#F4D68C]/80 text-lg mb-4 font-body">
