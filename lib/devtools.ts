@@ -5,6 +5,7 @@
  */
 
 import { Player, Round, HouseRules } from '@/types/game';
+import { useGameStore } from '@/lib/store';
 
 /**
  * Check if dev tools are enabled via URL parameter
@@ -69,4 +70,41 @@ export function generateMockPlayerHands(
   }));
 
   return { playerHands, yanivCallerId };
+}
+
+/**
+ * Generate a finished game with mock data for testing the results screen.
+ * Creates a game with 3 players, plays 5-8 rounds, then ends the game.
+ */
+export function generateFinishedGame(): void {
+  const store = useGameStore.getState();
+
+  const names = getRandomCricketerNames(3);
+  const houseRules: HouseRules = {
+    falseYanivPenalty: 25,
+    bystandersScoreOnFalseYaniv: false,
+    bonusType: 'subtract25',
+    winStreakBonus: false,
+    endGameMode: 'highScore',
+    maxScore: 150,
+    maxRounds: 10,
+  };
+
+  store.createGame(names, houseRules);
+
+  // Play 5-8 rounds
+  const numRounds = 5 + Math.floor(Math.random() * 4);
+  for (let i = 0; i < numRounds; i++) {
+    const game = useGameStore.getState().currentGame;
+    if (!game || game.gameEnded) break;
+
+    const { playerHands, yanivCallerId } = generateMockPlayerHands(game.players);
+    store.addRound(playerHands, yanivCallerId);
+  }
+
+  // Force end the game if it hasn't ended naturally
+  const finalGame = useGameStore.getState().currentGame;
+  if (finalGame && !finalGame.gameEnded) {
+    store.endGame();
+  }
 }

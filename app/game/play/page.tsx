@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore, getInitials, getFirstName } from '@/lib/store';
@@ -8,6 +8,7 @@ import { generateShareText } from '@/lib/share-utils';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useSaveGame } from '@/lib/hooks/use-save-game';
 import { claimPlayer } from '@/lib/actions/claim-player';
+import { isDevToolsEnabled, generateFinishedGame } from '@/lib/devtools';
 
 export default function GamePlayPage() {
   return (
@@ -52,10 +53,29 @@ function GamePlayContent() {
   const [previewingHighlightRound, setPreviewingHighlightRound] = useState<number | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
 
+  // Highlight preview timer ref
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Save game states
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [claimingPlayerId, setClaimingPlayerId] = useState<string | null>(null);
   const [claimStatus, setClaimStatus] = useState<'idle' | 'claiming' | 'claimed' | 'error'>('idle');
+
+  // Dev tools state
+  const [devMode, setDevMode] = useState(false);
+  useEffect(() => {
+    setDevMode(isDevToolsEnabled());
+  }, []);
+
+  // Auto-skip to phase via URL param (?phase=results)
+  useEffect(() => {
+    if (!devMode) return;
+    const phase = searchParams.get('phase');
+    if (phase && ['confirmation', 'podium', 'results'].includes(phase) && currentGame?.gameEnded) {
+      setPostGamePhase(phase as 'confirmation' | 'podium' | 'results');
+      setHasShownEndConfirmation(true);
+    }
+  }, [devMode, searchParams, currentGame?.gameEnded]);
 
   // Auto-save on return from auth redirect
   useEffect(() => {
@@ -104,9 +124,9 @@ function GamePlayContent() {
     }
   }, [gameId]);
 
-  // Redirect if no game - go to homepage, not /game/new
+  // Redirect if no game - go to homepage, not /game/new (skip in dev mode)
   useEffect(() => {
-    if (!currentGame) {
+    if (!currentGame && !isDevToolsEnabled()) {
       router.push('/');
     }
   }, [currentGame, router]);
@@ -126,6 +146,21 @@ function GamePlayContent() {
   }, [currentGame?.gameEnded, hasShownEndConfirmation, postGamePhase]);
 
   if (!currentGame) {
+    if (devMode || isDevToolsEnabled()) {
+      return (
+        <div className="min-h-dvh bg-[#0B3D2E] flex items-center justify-center">
+          <div className="p-5 rounded-xl bg-purple-600/20 border-2 border-purple-400/30">
+            <p className="text-purple-200 font-semibold text-sm tracking-wide font-body mb-3 text-center">DEV TOOLS</p>
+            <button
+              onClick={() => generateFinishedGame()}
+              className="w-full py-2 px-4 rounded-lg bg-purple-600 text-white text-sm font-body font-semibold active:scale-95 hover:bg-purple-700 transition-all"
+            >
+              Generate Finished Game
+            </button>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
@@ -515,8 +550,24 @@ function GamePlayContent() {
 
   // Handle clicking a highlight to preview that round (use inline preview)
   const handleHighlightClick = (roundIndex: number) => {
+    // Clear any existing timer
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = null;
+    }
+
+    if (previewingHighlightRound === roundIndex) {
+      // Same row tapped again → collapse
+      setPreviewingHighlightRound(null);
+      return;
+    }
+
+    // Open new row and set auto-close timer
     setPreviewingHighlightRound(roundIndex);
-    setTimeout(() => setPreviewingHighlightRound(null), 5000);
+    highlightTimerRef.current = setTimeout(() => {
+      setPreviewingHighlightRound(null);
+      highlightTimerRef.current = null;
+    }, 5000);
   };
 
   // Handle share button
@@ -1020,7 +1071,7 @@ function GamePlayContent() {
             {postGamePhase === 'results' && (
               <div className="flex-1 flex flex-col relative">
                 {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto py-4 pb-40">
+                <div className="flex-1 overflow-y-auto py-4 pb-64">
                 {/* Mini podium at top */}
                 <div
                   className="flex items-end justify-center gap-1 mb-5 animate-results-reveal"
@@ -1153,7 +1204,7 @@ function GamePlayContent() {
                 >
                   <div className="flex-1 h-px bg-[#C9972D]/20" />
                   <span className="text-[#F4D68C]/60 text-sm font-body">Yan Highlights</span>
-                  <span className="text-[#F4D68C]/40">▼</span>
+                  <span className="text-[#F4D68C]/25">♦</span>
                   <div className="flex-1 h-px bg-[#C9972D]/20" />
                 </div>
 
@@ -1193,7 +1244,7 @@ function GamePlayContent() {
                       {/* Lowest hand */}
                       <div className="space-y-2">
                         <div
-                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-3 rounded-lg transition-colors ${
                             previewingHighlightRound === highlights.lowestHand.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
                           }`}
                           onClick={() => handleHighlightClick(highlights.lowestHand.roundIndex)}
@@ -1202,6 +1253,7 @@ function GamePlayContent() {
                           <div className="flex items-center gap-3">
                             <span className="text-[#10B981] font-score font-bold">{highlights.lowestHand.score}</span>
                             <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.lowestHand.playerId)?.name || '')}</span>
+                            <span className="text-[#F4D68C]/30 text-sm">›</span>
                           </div>
                         </div>
                         {previewingHighlightRound === highlights.lowestHand.roundIndex && (
@@ -1222,7 +1274,7 @@ function GamePlayContent() {
                       {/* Worst hand */}
                       <div className="space-y-2">
                         <div
-                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-3 rounded-lg transition-colors ${
                             previewingHighlightRound === highlights.worstHand.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
                           }`}
                           onClick={() => handleHighlightClick(highlights.worstHand.roundIndex)}
@@ -1231,6 +1283,7 @@ function GamePlayContent() {
                           <div className="flex items-center gap-3">
                             <span className="text-[#C41E3A] font-score font-bold">{highlights.worstHand.score}</span>
                             <span className="text-[#E5B94A] font-body">{getFirstName(players.find(p => p.id === highlights.worstHand.playerId)?.name || '')}</span>
+                            <span className="text-[#F4D68C]/30 text-sm">›</span>
                           </div>
                         </div>
                         {previewingHighlightRound === highlights.worstHand.roundIndex && (
@@ -1251,7 +1304,7 @@ function GamePlayContent() {
                       {/* Worst round */}
                       <div className="space-y-2">
                         <div
-                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-3 rounded-lg transition-colors ${
                             previewingHighlightRound === highlights.worstRound.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
                           }`}
                           onClick={() => handleHighlightClick(highlights.worstRound.roundIndex)}
@@ -1260,6 +1313,7 @@ function GamePlayContent() {
                           <div className="flex items-center gap-3">
                             <span className="text-[#C41E3A] font-score font-bold">{highlights.worstRound.totalScore}</span>
                             <span className="text-[#E5B94A] font-body">R{highlights.worstRound.roundIndex + 1}</span>
+                            <span className="text-[#F4D68C]/30 text-sm">›</span>
                           </div>
                         </div>
                         {previewingHighlightRound === highlights.worstRound.roundIndex && (
@@ -1280,7 +1334,7 @@ function GamePlayContent() {
                       {/* Best round */}
                       <div className="space-y-2">
                         <div
-                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-1 rounded-lg transition-colors ${
+                          className={`flex items-center justify-between cursor-pointer -mx-2 px-2 py-3 rounded-lg transition-colors ${
                             previewingHighlightRound === highlights.bestRound.roundIndex ? 'bg-[#3B82F6]/15' : 'hover:bg-[#F4D68C]/10'
                           }`}
                           onClick={() => handleHighlightClick(highlights.bestRound.roundIndex)}
@@ -1289,6 +1343,7 @@ function GamePlayContent() {
                           <div className="flex items-center gap-3">
                             <span className="text-[#10B981] font-score font-bold">{highlights.bestRound.totalScore}</span>
                             <span className="text-[#E5B94A] font-body">R{highlights.bestRound.roundIndex + 1}</span>
+                            <span className="text-[#F4D68C]/30 text-sm">›</span>
                           </div>
                         </div>
                         {previewingHighlightRound === highlights.bestRound.roundIndex && (
@@ -1359,6 +1414,9 @@ function GamePlayContent() {
                   </button>
                   <button
                     onClick={() => {
+                      if (!isSaved && !confirm('Start a new game? Your current game hasn\'t been saved.')) {
+                        return;
+                      }
                       resetGame();
                       router.push('/game/new');
                     }}
@@ -1672,6 +1730,48 @@ function GamePlayContent() {
                   }}
                 >
                   {currentPlayerIndex < playerInputOrder.length - 1 ? 'Next' : 'Done'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Dev Tools Panel */}
+      {devMode && (
+        <div className="fixed bottom-4 right-4 z-[55] p-3 rounded-xl bg-purple-600/20 border-2 border-purple-400/30 backdrop-blur-sm max-w-[200px]">
+          <p className="text-purple-200 font-semibold text-xs tracking-wide font-body mb-2 text-center">DEV TOOLS</p>
+          <div className="space-y-1.5">
+            {!currentGame?.gameEnded && (
+              <button
+                onClick={() => {
+                  generateFinishedGame();
+                  setHasShownEndConfirmation(true);
+                }}
+                className="w-full py-1.5 px-2 rounded-lg bg-purple-600 text-white text-xs font-body font-semibold active:scale-95 hover:bg-purple-700 transition-all"
+              >
+                Generate Finished Game
+              </button>
+            )}
+            {currentGame?.gameEnded && (
+              <>
+                <button
+                  onClick={() => { setPostGamePhase('confirmation'); setHasShownEndConfirmation(true); }}
+                  className="w-full py-1.5 px-2 rounded-lg bg-purple-600 text-white text-xs font-body font-semibold active:scale-95 hover:bg-purple-700 transition-all"
+                >
+                  → Confirmation
+                </button>
+                <button
+                  onClick={() => { setPostGamePhase('podium'); setHasShownEndConfirmation(true); setPodiumStep(3); }}
+                  className="w-full py-1.5 px-2 rounded-lg bg-purple-600 text-white text-xs font-body font-semibold active:scale-95 hover:bg-purple-700 transition-all"
+                >
+                  → Podium
+                </button>
+                <button
+                  onClick={() => { setPostGamePhase('results'); setHasShownEndConfirmation(true); }}
+                  className="w-full py-1.5 px-2 rounded-lg bg-purple-600 text-white text-xs font-body font-semibold active:scale-95 hover:bg-purple-700 transition-all"
+                >
+                  → Results
                 </button>
               </>
             )}
