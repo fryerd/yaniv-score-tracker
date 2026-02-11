@@ -19,7 +19,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B3D2E] relative overflow-hidden">
+    <div className="min-h-dvh bg-[#0B3D2E] relative overflow-hidden">
       {/* Noise texture overlay for felt effect */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -42,7 +42,7 @@ export default function Home() {
         }}
       />
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+      <div className="relative z-10 min-h-dvh flex items-center justify-center p-6">
         <div
           className={`w-full max-w-md transition-all duration-700 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'

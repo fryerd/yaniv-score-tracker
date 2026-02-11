@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Crimson_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,10 @@ const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
 });
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: "Yaniv Score Tracker",

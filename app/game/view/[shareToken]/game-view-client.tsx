@@ -42,7 +42,7 @@ export function GameViewClient({ gameData, claims, playedAt }: GameViewClientPro
   const dateStr = formatShareDate(new Date(playedAt));
 
   return (
-    <div className="min-h-screen bg-[#0B3D2E] relative overflow-hidden">
+    <div className="min-h-dvh bg-[#0B3D2E] relative overflow-hidden">
       {/* Felt texture */}
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -51,7 +51,7 @@ export function GameViewClient({ gameData, claims, playedAt }: GameViewClientPro
         }}
       />
 
-      <div className="relative z-10 min-h-screen flex flex-col p-6 max-w-lg mx-auto">
+      <div className="relative z-10 min-h-dvh flex flex-col p-6 max-w-lg mx-auto">
         {/* Header */}
         <header className="flex items-center justify-between mb-6">
           <Link

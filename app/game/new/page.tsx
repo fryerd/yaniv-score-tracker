@@ -144,7 +144,7 @@ export default function NewGamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B3D2E] relative overflow-hidden">
+    <div className="min-h-dvh bg-[#0B3D2E] relative overflow-hidden">
       {/* Felt texture */}
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -161,7 +161,7 @@ export default function NewGamePage() {
         }}
       />
 
-      <div className="relative z-10 min-h-screen flex flex-col px-6 py-8 max-w-md mx-auto">
+      <div className="relative z-10 min-h-dvh flex flex-col px-6 py-8 max-w-md mx-auto">
         {/* Header */}
         <header className="flex items-center justify-between mb-8">
           <Link
