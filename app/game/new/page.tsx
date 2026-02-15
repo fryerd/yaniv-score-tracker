@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { HouseRules } from '@/types/game';
 import { useGameStore } from '@/lib/store';
 import { getRandomCricketerNames, generateMockPlayerHands } from '@/lib/devtools';
+import { useSound } from '@/lib/sounds';
 
 // Avatar colors - rich, saturated palette
 const AVATAR_COLORS = [
@@ -43,6 +44,7 @@ function formatPlayerNames(players: string[]): string {
 export default function NewGamePage() {
   const router = useRouter();
   const createGame = useGameStore(state => state.createGame);
+  const { play } = useSound();
   const [step, setStep] = useState(1);
 
   // Dev mode state
@@ -89,11 +91,14 @@ export default function NewGamePage() {
   }, [houseRules.endGameMode, houseRules.maxRounds, devMode, startingRound]);
 
   const toggleRule = (rule: 'falseYaniv' | 'bonus' | 'endGame') => {
-    setExpandedRule(expandedRule === rule ? null : rule);
+    const isClosing = expandedRule === rule;
+    play(isClosing ? 'dropdown-close' : 'dropdown-open');
+    setExpandedRule(isClosing ? null : rule);
   };
 
   // Handlers
   const handlePlayerCountContinue = () => {
+    play('step-whoosh');
     if (devMode) {
       // Auto-fill with random cricketer names in dev mode
       const names = getRandomCricketerNames(playerCount);
@@ -113,6 +118,7 @@ export default function NewGamePage() {
   const canContinueFromNames = players.every(p => p.trim().length > 0);
 
   const handleStartGame = () => {
+    play('step-whoosh');
     createGame(players, houseRules);
 
     // In dev mode, add mock rounds to start at a later round
@@ -212,7 +218,7 @@ export default function NewGamePage() {
 
                 <div className="flex items-center justify-center gap-6 mb-16">
                   <button
-                    onClick={() => setPlayerCount(Math.max(2, playerCount - 1))}
+                    onClick={() => { setPlayerCount(Math.max(2, playerCount - 1)); play('stepper-tick'); }}
                     disabled={playerCount <= 2}
                     className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                     style={{
@@ -237,7 +243,7 @@ export default function NewGamePage() {
                   </div>
 
                   <button
-                    onClick={() => setPlayerCount(Math.min(8, playerCount + 1))}
+                    onClick={() => { setPlayerCount(Math.min(8, playerCount + 1)); play('stepper-tick'); }}
                     disabled={playerCount >= 8}
                     className="w-16 h-16 rounded-full text-3xl font-bold transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100 focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                     style={{
@@ -299,7 +305,7 @@ export default function NewGamePage() {
               </div>
 
               <button
-                onClick={() => setStep(3)}
+                onClick={() => { play('step-whoosh'); setStep(3); }}
                 disabled={!canContinueFromNames}
                 className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:hover:brightness-100 text-[#F5F0E1] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={canContinueFromNames ? primaryButtonStyle : { background: '#0F5740' }}
@@ -357,7 +363,7 @@ export default function NewGamePage() {
 
                       <div className="flex items-center justify-center gap-4 mb-5">
                         <button
-                          onClick={() => setHouseRules({ ...houseRules, falseYanivPenalty: Math.max(0, houseRules.falseYanivPenalty - 5) })}
+                          onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, falseYanivPenalty: Math.max(0, houseRules.falseYanivPenalty - 5) }); }}
                           className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                         >
                           −
@@ -366,7 +372,7 @@ export default function NewGamePage() {
                           <span className="text-[#1A1A1A] font-bold text-2xl font-score">{houseRules.falseYanivPenalty}</span>
                         </div>
                         <button
-                          onClick={() => setHouseRules({ ...houseRules, falseYanivPenalty: houseRules.falseYanivPenalty + 5 })}
+                          onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, falseYanivPenalty: houseRules.falseYanivPenalty + 5 }); }}
                           className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                         >
                           +
@@ -377,7 +383,7 @@ export default function NewGamePage() {
                         <input
                           type="checkbox"
                           checked={houseRules.bystandersScoreOnFalseYaniv}
-                          onChange={(e) => setHouseRules({ ...houseRules, bystandersScoreOnFalseYaniv: e.target.checked })}
+                          onChange={(e) => { play('toggle-switch'); setHouseRules({ ...houseRules, bystandersScoreOnFalseYaniv: e.target.checked }); }}
                           className="w-5 h-5 rounded accent-[#8B6914]"
                         />
                         <span className="text-[#1A1A1A]/80 text-sm font-body">Bystanders also score their hands</span>
@@ -432,7 +438,7 @@ export default function NewGamePage() {
                           <button
                             key={opt.value}
                             type="button"
-                            onClick={() => setHouseRules({ ...houseRules, bonusType: opt.value as HouseRules['bonusType'] })}
+                            onClick={() => { play('toggle-switch'); setHouseRules({ ...houseRules, bonusType: opt.value as HouseRules['bonusType'] }); }}
                             className={`w-full flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 ${
                               houseRules.bonusType === opt.value ? 'bg-white/80 shadow-sm' : 'bg-white/20 hover:bg-white/40'
                             }`}
@@ -454,7 +460,7 @@ export default function NewGamePage() {
                         <input
                           type="checkbox"
                           checked={houseRules.winStreakBonus}
-                          onChange={(e) => setHouseRules({ ...houseRules, winStreakBonus: e.target.checked })}
+                          onChange={(e) => { play('toggle-switch'); setHouseRules({ ...houseRules, winStreakBonus: e.target.checked }); }}
                           className="w-5 h-5 rounded accent-[#8B6914]"
                         />
                         <div className="flex-1">
@@ -506,7 +512,7 @@ export default function NewGamePage() {
                       {/* Mode toggle */}
                       <div className="flex rounded-xl bg-white/30 p-1 mb-5">
                         <button
-                          onClick={() => setHouseRules({ ...houseRules, endGameMode: 'highScore' })}
+                          onClick={() => { play('toggle-switch'); setHouseRules({ ...houseRules, endGameMode: 'highScore' }); }}
                           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold font-body transition-all duration-200 ${
                             houseRules.endGameMode === 'highScore'
                               ? 'bg-white text-[#1A1A1A] shadow-sm'
@@ -516,7 +522,7 @@ export default function NewGamePage() {
                           Score Limit
                         </button>
                         <button
-                          onClick={() => setHouseRules({ ...houseRules, endGameMode: 'numRounds' })}
+                          onClick={() => { play('toggle-switch'); setHouseRules({ ...houseRules, endGameMode: 'numRounds' }); }}
                           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold font-body transition-all duration-200 ${
                             houseRules.endGameMode === 'numRounds'
                               ? 'bg-white text-[#1A1A1A] shadow-sm'
@@ -534,7 +540,7 @@ export default function NewGamePage() {
                           </p>
                           <div className="flex items-center justify-center gap-4">
                             <button
-                              onClick={() => setHouseRules({ ...houseRules, maxScore: Math.max(50, houseRules.maxScore - 25) })}
+                              onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, maxScore: Math.max(50, houseRules.maxScore - 25) }); }}
                               className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               −
@@ -543,7 +549,7 @@ export default function NewGamePage() {
                               <span className="text-[#1A1A1A] font-bold text-2xl font-score">{houseRules.maxScore}</span>
                             </div>
                             <button
-                              onClick={() => setHouseRules({ ...houseRules, maxScore: houseRules.maxScore + 25 })}
+                              onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, maxScore: houseRules.maxScore + 25 }); }}
                               className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               +
@@ -557,7 +563,7 @@ export default function NewGamePage() {
                           </p>
                           <div className="flex items-center justify-center gap-4">
                             <button
-                              onClick={() => setHouseRules({ ...houseRules, maxRounds: Math.max(1, houseRules.maxRounds - 1) })}
+                              onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, maxRounds: Math.max(1, houseRules.maxRounds - 1) }); }}
                               className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               −
@@ -566,7 +572,7 @@ export default function NewGamePage() {
                               <span className="text-[#1A1A1A] font-bold text-2xl font-score">{houseRules.maxRounds}</span>
                             </div>
                             <button
-                              onClick={() => setHouseRules({ ...houseRules, maxRounds: houseRules.maxRounds + 1 })}
+                              onClick={() => { play('stepper-tick'); setHouseRules({ ...houseRules, maxRounds: houseRules.maxRounds + 1 }); }}
                               className="w-12 h-12 rounded-xl bg-[#C9972D] text-[#1A1A1A] font-bold text-xl active:scale-95 hover:bg-[#B8860B] transition-all focus-visible:ring-2 focus-visible:ring-[#8B6914]"
                             >
                               +
@@ -580,7 +586,7 @@ export default function NewGamePage() {
               </div>
 
               <button
-                onClick={() => setStep(4)}
+                onClick={() => { play('step-whoosh'); setStep(4); }}
                 className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-150 active:translate-y-[2px] active:shadow-none hover:brightness-110 text-[#F5F0E1] tracking-wide font-body focus-visible:ring-2 focus-visible:ring-[#F4D68C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B3D2E]"
                 style={primaryButtonStyle}
               >

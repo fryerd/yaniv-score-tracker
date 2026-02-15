@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/hooks/use-auth';
 import { useSaveGame } from '@/lib/hooks/use-save-game';
 import { claimPlayer } from '@/lib/actions/claim-player';
 import { isDevToolsEnabled, generateFinishedGame } from '@/lib/devtools';
+import { useSound } from '@/lib/sounds';
 
 export default function GamePlayPage() {
   return (
@@ -22,6 +23,7 @@ function GamePlayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentGame, addRound, resetGame } = useGameStore();
+  const { play, isMuted, toggleMute } = useSound();
   const { user, isAuthenticated } = useAuth();
   const { save, status: saveStatus, shareToken, gameId, isSaved, isSaving } = useSaveGame();
 
@@ -105,9 +107,10 @@ function GamePlayContent() {
 
     const result = await save(currentGame);
     if (result.success) {
+      play('confirm-chime');
       setShowClaimModal(true);
     }
-  }, [currentGame, isAuthenticated, router, save]);
+  }, [currentGame, isAuthenticated, router, save, play]);
 
   // Handle claiming a player
   const handleClaimPlayer = useCallback(async (playerId: string, playerName: string) => {
@@ -138,12 +141,13 @@ function GamePlayContent() {
     if (currentGame?.gameEnded && !hasShownEndConfirmation && !postGamePhase) {
       // Delay showing confirmation until after score animations complete
       const timer = setTimeout(() => {
+        play('game-end-transition');
         setPostGamePhase('confirmation');
         setHasShownEndConfirmation(true);
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [currentGame?.gameEnded, hasShownEndConfirmation, postGamePhase]);
+  }, [currentGame?.gameEnded, hasShownEndConfirmation, postGamePhase, play]);
 
   if (!currentGame) {
     if (devMode || isDevToolsEnabled()) {
@@ -169,6 +173,7 @@ function GamePlayContent() {
 
   // Start inputting scores for a new round
   const handleStartInput = () => {
+    play('add-score');
     setRoundScores({});
     setYanivCallerId(null);
     setInputStep('selectYaniv');
@@ -181,6 +186,7 @@ function GamePlayContent() {
 
   // Handle selecting who called Yaniv
   const handleSelectYaniv = (playerId: string) => {
+    play('card-select');
     setYanivCallerId(playerId);
     setInputStep('enterScores');
     setCurrentPlayerIndex(0);
@@ -201,6 +207,7 @@ function GamePlayContent() {
   // Handle number input
   const handleNumberInput = (num: string) => {
     if (inputValue.length < 2) {
+      play('numpad-tap');
       setInputValue(inputValue + num);
     }
   };
@@ -226,12 +233,14 @@ function GamePlayContent() {
 
     // Check if this is the Yaniv caller (first player) and their score is > 5
     if (currentPlayerIndex === 0 && score > 5 && !confirmedWarning) {
+      play('alert-tone');
       setShowYanivWarning(true);
       return;
     }
 
     // Check if score is unusually high (> 30) for any player
     if (score > 30 && !confirmedWarning) {
+      play('alert-tone');
       setShowHighScoreWarning(true);
       return;
     }
@@ -243,6 +252,7 @@ function GamePlayContent() {
 
     if (currentPlayerIndex < playerInputOrder.length - 1) {
       // Move to next player with animation (exit left, enter from right)
+      play('player-slide');
       setSlideDirection('exit');
       setTimeout(() => {
         setCurrentPlayerIndex(currentPlayerIndex + 1);
@@ -257,6 +267,7 @@ function GamePlayContent() {
       }, 400);
     } else {
       // All scores entered, show raw scores briefly then close
+      play('score-outro');
       setShowRawScores(true);
 
       setTimeout(() => {
@@ -274,6 +285,10 @@ function GamePlayContent() {
           });
 
           addRound(playerHands, yanivCallerId);
+
+          // Check if this round was a false yaniv
+          const newRound = useGameStore.getState().currentGame?.rounds.at(-1);
+          const isFalseYaniv = newRound?.isFalseYaniv ?? false;
 
           // Close modal and start counter animation
           setShowRawScores(false);
@@ -297,6 +312,7 @@ function GamePlayContent() {
           const stepTime = baseDuration / steps;
 
           // Start staggered animations for each player
+          // Play tick sound every 3rd step for first player only (avoids overlapping ticks)
           players.forEach((player, playerIndex) => {
             const delay = playerIndex * staggerDelay;
 
@@ -307,6 +323,11 @@ function GamePlayContent() {
               const playerInterval = setInterval(() => {
                 step++;
                 const progress = step / steps;
+
+                // Tick sound on every 3rd step (first player only to avoid overlap)
+                if (playerIndex === 0 && step % 3 === 1) {
+                  play('score-tick');
+                }
 
                 setAnimatedScores(prev => ({
                   ...prev,
@@ -320,37 +341,23 @@ function GamePlayContent() {
                     [player.id]: targetScore,
                   }));
 
-                  // If this is the last player, start total animations
+                  // If this is the last player, snap totals into place
                   if (playerIndex === players.length - 1) {
-                    // All round scores done, now animate totals with stagger
+                    // Brief pause after ticking, then snap totals
                     setTimeout(() => {
-                      players.forEach((p, idx) => {
-                        setTimeout(() => {
-                          let totalStep = 0;
-                          const totalInterval = setInterval(() => {
-                            totalStep++;
-                            const totalProgress = totalStep / steps;
-                            const oldTotal = oldTotals[p.id] ?? 0;
-                            const scoreAdded = newScores[p.id] ?? 0;
-                            const newTotal = oldTotal + scoreAdded;
-
-                            setAnimatedTotals(prev => ({
-                              ...prev,
-                              [p.id]: Math.round(oldTotal + (newTotal - oldTotal) * totalProgress),
-                            }));
-
-                            if (totalStep >= steps) {
-                              clearInterval(totalInterval);
-
-                              // If last player's total animation done, end animation state
-                              if (idx === players.length - 1) {
-                                setAnimatingRoundIndex(null);
-                              }
-                            }
-                          }, stepTime);
-                        }, idx * staggerDelay);
+                      play(isFalseYaniv ? 'false-yaniv-wah' : 'total-snap');
+                      // Snap all totals at once (no counting animation)
+                      const snappedTotals: { [id: string]: number } = {};
+                      players.forEach(p => {
+                        snappedTotals[p.id] = (oldTotals[p.id] ?? 0) + (newScores[p.id] ?? 0);
                       });
-                    }, 200);
+                      setAnimatedTotals(snappedTotals);
+
+                      // End animation state after a brief hold
+                      setTimeout(() => {
+                        setAnimatingRoundIndex(null);
+                      }, isFalseYaniv ? 1500 : 600);
+                    }, 250);
                   }
                 }
               }, stepTime);
@@ -523,13 +530,15 @@ function GamePlayContent() {
   const handleSeeResults = () => {
     setPostGamePhase('podium');
     setPodiumStep(0);
+    play('podium-reveal');
 
     const sortedPlayers = getSortedPlayers();
-    const delays = sortedPlayers.length === 2
+    const isTwoPlayers = sortedPlayers.length === 2;
+    const delays = isTwoPlayers
       ? [0, 800] // 2 players: just show winner
       : [0, 800, 1600]; // 3+ players: bronze, silver, gold
 
-    // Animate podium steps
+    // Animate podium steps (sound plays once at start)
     delays.forEach((delay, index) => {
       setTimeout(() => {
         setPodiumStep(index + 1);
@@ -584,6 +593,7 @@ function GamePlayContent() {
         await navigator.share({
           text: text,
         });
+        play('confirm-chime');
         setShareMessage('Shared!');
         setTimeout(() => setShareMessage(null), 2000);
         return;
@@ -598,6 +608,7 @@ function GamePlayContent() {
     // Fallback to clipboard for desktop browsers or if share fails
     try {
       await navigator.clipboard.writeText(text);
+      play('confirm-chime');
       setShareMessage('Copied to clipboard!');
       setTimeout(() => setShareMessage(null), 2000);
     } catch {
@@ -638,11 +649,32 @@ function GamePlayContent() {
           >
             ← Exit
           </Link>
-          <span className="text-[#F4D68C]/60 text-sm font-body">
-            {houseRules.endGameMode === 'highScore'
-              ? `First to ${houseRules.maxScore}`
-              : `Round ${rounds.length}/${houseRules.maxRounds}`}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[#F4D68C]/60 text-sm font-body">
+              {houseRules.endGameMode === 'highScore'
+                ? `First to ${houseRules.maxScore}`
+                : `Round ${rounds.length}/${houseRules.maxRounds}`}
+            </span>
+            <button
+              onClick={toggleMute}
+              className="text-[#F4D68C]/40 hover:text-[#F4D68C]/80 transition-colors p-1 -mr-1"
+              aria-label={isMuted ? 'Unmute sounds' : 'Mute sounds'}
+            >
+              {isMuted ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              )}
+            </button>
+          </div>
         </header>
 
         {/* Tally Screen */}
@@ -694,8 +726,8 @@ function GamePlayContent() {
                 : player.cumulativeScore;
               return (
                 <div key={player.id} className="flex-1 flex justify-center">
-                  <span className={`font-score text-lg font-semibold transition-all ${
-                    animatingRoundIndex !== null ? 'text-[#E5B94A] scale-110' : 'text-[#F4D68C]'
+                  <span className={`font-score text-lg font-semibold transition-all duration-300 ${
+                    animatingRoundIndex !== null ? 'text-[#E5B94A] scale-125 font-bold' : 'text-[#F4D68C]'
                   }`}>
                     {displayScore}
                   </span>

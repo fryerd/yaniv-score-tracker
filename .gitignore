@@ -42,3 +42,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sfx working directories
+public/sfx/audition/
+public/sfx/jazz/
+public/sfx/warm/

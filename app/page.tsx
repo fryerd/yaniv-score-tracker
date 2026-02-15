@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { isDevToolsEnabled } from '@/lib/devtools';
+import { useSound } from '@/lib/sounds';
 
 export default function Home() {
+  const { play } = useSound();
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [devToolsEnabled, setDevToolsEnabled] = useState(false);
@@ -95,6 +97,7 @@ export default function Home() {
               {/* Primary Button: New Game */}
               <Link
                 href="/game/new"
+                onClick={() => play('numpad-tap')}
                 className="group w-full relative py-5 px-8 rounded-xl transition-all duration-150 active:translate-y-[2px] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] block text-center"
                 style={{
                   background: 'linear-gradient(to bottom, #E5B94A, #C9972D)',
@@ -114,6 +117,7 @@ export default function Home() {
               {hasSavedGame ? (
                 <Link
                   href="/game/play"
+                  onClick={() => play('numpad-tap')}
                   className="group w-full relative py-4 px-8 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#F4D68C] focus:ring-offset-2 focus:ring-offset-[#0F5740] active:translate-y-[2px] hover:brightness-110 hover:border-[#E5B94A]/40 cursor-pointer block text-center"
                   style={{
                     background: 'linear-gradient(to bottom, #14785A, #0F5740)',
